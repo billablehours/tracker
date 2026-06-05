@@ -177,16 +177,17 @@ function uid(){return 'x'+Math.random().toString(36).slice(2)}
 let S={
   view:'dashboard',year:new Date().getFullYear(),month:new Date().getMonth(),
   selectedCustomer:null,modal:null,_modalHours:0.5,
-  customers:[],entries:{},
+  customers:[],archivedCustomers:[],entries:{},
   settings:{defaultRate:0,currency:'HUF',baseSalary:0},
 };
 
 function loadData(){
   try{const r=localStorage.getItem(SK_CUSTOMERS);if(r)S.customers=JSON.parse(r);}catch(e){S.customers=[];}
+  try{const r=localStorage.getItem('bht_archived');if(r)S.archivedCustomers=JSON.parse(r);}catch(e){S.archivedCustomers=[];}
   try{const r=localStorage.getItem(SK_ENTRIES);if(r)S.entries=JSON.parse(r);}catch(e){S.entries={};}
   try{const r=localStorage.getItem(SK_SETTINGS);if(r)S.settings={...S.settings,...JSON.parse(r)};}catch(e){}
 }
-function saveCustomers(){try{localStorage.setItem(SK_CUSTOMERS,JSON.stringify(S.customers));}catch(e){}}
+function saveCustomers(){try{localStorage.setItem(SK_CUSTOMERS,JSON.stringify(S.customers));localStorage.setItem('bht_archived',JSON.stringify(S.archivedCustomers));}catch(e){}}
 function saveEntries(){try{localStorage.setItem(SK_ENTRIES,JSON.stringify(S.entries));}catch(e){}}
 function saveSettings(){try{localStorage.setItem(SK_SETTINGS,JSON.stringify(S.settings));}catch(e){}}
 
@@ -383,8 +384,9 @@ function renderCCard(c){
 }
 
 function renderDetail(app){
-  const c=S.customers.find(x=>x.id===S.selectedCustomer);
+  const c=findCustomer(S.selectedCustomer);
   if(!c){S.view='dashboard';render();return;}
+  const isArchived=!S.customers.find(x=>x.id===S.selectedCustomer);
   const entries=getEntries(c.id,S.year,S.month);
   const h=entries.reduce((s,e)=>s+e.hours,0);
   const rate=effectiveRate(c);
@@ -436,10 +438,11 @@ function renderDetail(app){
     <button class="btn-secondary" onclick="goBack()">${ic.back} Back</button>
     <div class="detail-title"><div class="c-dot"></div>${c.name}<span class="detail-month">&middot; ${MONTHS[S.month]} ${S.year}</span></div>
     <div style="display:flex;gap:8px">
-      <button class="btn-secondary" onclick="openEditCustomer('${c.id}')">${ic.edit} Edit</button>
-      <button class="btn-secondary" style="color:var(--red);border-color:#fca5a5" onclick="deleteCustomer('${c.id}')">
-        ${ic.trash} Delete
-      </button>
+      ${isArchived
+        ?`<span style="font-size:13px;color:var(--text-hint);padding:7px 12px;border:1px solid var(--border);border-radius:var(--radius)">Archived</span>`
+        :`<button class="btn-secondary" onclick="openEditCustomer('${c.id}')">${ic.edit} Edit</button>
+          <button class="btn-secondary" style="color:var(--red);border-color:#fca5a5" onclick="deleteCustomer('${c.id}')">${ic.trash} Delete</button>`
+      }
     </div>
   </div>
   <div class="stats-grid" style="margin-bottom:1.5rem">
@@ -564,11 +567,16 @@ function deleteEntry(cid,eid){
   saveEntries();render();
 }
 
+function findCustomer(id){
+  return S.customers.find(x=>x.id===id) || S.archivedCustomers.find(x=>x.id===id);
+}
+
 function deleteCustomer(id){
   const c=S.customers.find(x=>x.id===id);
   if(!c) return;
   if(!confirm(`Remove "${c.name}"? They will no longer appear going forward, but all past entries are kept and you can still browse them by navigating to previous months.`)) return;
   S.customers=S.customers.filter(x=>x.id!==id);
+  if(!S.archivedCustomers.find(x=>x.id===id)) S.archivedCustomers.push(c);
   const currentKey=monthKey(S.year,S.month);
   Object.keys(S.entries).forEach(k=>{
     if(!k.startsWith(id+'::')) return;
@@ -585,7 +593,7 @@ function prevMonth(){if(S.month===0){S.month=11;S.year--;}else S.month--;render(
 function nextMonth(){if(S.month===11){S.month=0;S.year++;}else S.month++;render();}
 
 function exportData(){
-  const data={customers:S.customers,entries:S.entries,settings:S.settings,exportedAt:new Date().toISOString(),version:2};
+  const data={customers:S.customers,archivedCustomers:S.archivedCustomers,entries:S.entries,settings:S.settings,exportedAt:new Date().toISOString(),version:2};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;a.download=`billable-hours-backup-${today()}.json`;a.click();
@@ -601,6 +609,7 @@ function importData(){
     try{
       const data=JSON.parse(text);
       if(data.customers) S.customers=data.customers;
+      if(data.archivedCustomers) S.archivedCustomers=data.archivedCustomers;
       if(data.entries) S.entries=data.entries;
       if(data.settings) S.settings={...S.settings,...data.settings};
       saveCustomers();saveEntries();saveSettings();render();
