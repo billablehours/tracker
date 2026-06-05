@@ -49,9 +49,12 @@ textarea{resize:vertical;height:80px}
 .btn-ghost{background:none;border:none;color:var(--text-secondary);padding:4px;display:inline-flex;align-items:center;border-radius:6px}
 .btn-ghost:hover{color:var(--text);background:var(--bg)}
 .customers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
-.customer-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;cursor:pointer;transition:border-color 0.15s}
+.customer-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;cursor:pointer;transition:border-color 0.15s;position:relative}
 .customer-card:hover{border-color:var(--blue)}
 .customer-card.archived-card{opacity:0.7;border-style:dashed}
+.card-x{position:absolute;top:10px;right:10px;width:20px;height:20px;border-radius:50%;background:none;border:none;color:var(--text-hint);font-size:16px;display:none;align-items:center;justify-content:center;line-height:1;padding:0;cursor:pointer}
+.card-x:hover{color:var(--red);background:#fef2f2}
+.customer-card:hover .card-x{display:flex}
 .c-name-row{display:flex;align-items:center;gap:8px;margin-bottom:12px}
 .c-dot{width:9px;height:9px;border-radius:50%;background:var(--blue);flex-shrink:0}
 .c-dot.archived{background:var(--text-hint)}
@@ -359,6 +362,7 @@ function renderCCard(c){
     </div>`;
   }
   return `<div class="customer-card${archived?' archived-card':''}" onclick="openDetail('${c.id}')">
+    ${archived?'':`<button class="card-x" onclick="event.stopPropagation();archiveCustomer('${c.id}')" title="Remove customer">&#x2715;</button>`}
     <div class="c-name-row"><div class="c-dot${archived?' archived':''}"></div><span class="c-name">${c.name}${archived?' <span style="font-size:11px;color:var(--text-hint)">(archived)</span>':''}</span></div>
     <div class="c-row"><span class="c-lbl">Hours this month:</span><span class="c-val">${h.toFixed(1)}</span></div>
     <div class="c-row"><span class="c-lbl">Revenue:</span><span class="c-val-green">${fmtMoney(rev)}</span></div>
@@ -428,7 +432,6 @@ function renderDetail(app){
     </div>
     <div style="display:flex;gap:8px">
       ${arch?'':`<button class="btn-secondary" onclick="openEditCustomer('${c.id}')">${ic.edit} Edit</button>`}
-      ${arch?'':`<button class="btn-danger" onclick="archiveCustomer('${c.id}')">${ic.trash} Delete</button>`}
     </div>
   </div>
   <div class="stats-grid" style="margin-bottom:1.5rem">
@@ -555,11 +558,8 @@ function deleteEntry(cid,eid){
 function archiveCustomer(id){
   const c=S.active.find(x=>x.id===id);
   if(!c) return;
-  if(!confirm(`Remove "${c.name}"?\n\nThey will disappear from the dashboard going forward, but all past entries remain visible when you browse previous months.`)) return;
-  // Move from active to archived
   S.active=S.active.filter(x=>x.id!==id);
   S.archived.push(c);
-  // Delete entries from current month onwards only
   const curKey=mk(S.year,S.month);
   Object.keys(S.entries).forEach(k=>{
     if(k.startsWith(id+'::')&&k.split('::')[1]>=curKey) delete S.entries[k];
