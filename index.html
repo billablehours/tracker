@@ -567,9 +567,14 @@ function deleteEntry(cid,eid){
 function deleteCustomer(id){
   const c=S.customers.find(x=>x.id===id);
   if(!c) return;
-  if(!confirm(`Delete "${c.name}"? This will also remove all their time entries. This cannot be undone.`)) return;
+  if(!confirm(`Remove "${c.name}"? They will no longer appear going forward, but all past entries are kept and you can still browse them by navigating to previous months.`)) return;
   S.customers=S.customers.filter(x=>x.id!==id);
-  Object.keys(S.entries).forEach(k=>{if(k.startsWith(id+'::'))delete S.entries[k];});
+  const currentKey=monthKey(S.year,S.month);
+  Object.keys(S.entries).forEach(k=>{
+    if(!k.startsWith(id+'::')) return;
+    const mk=k.split('::')[1];
+    if(mk>=currentKey) delete S.entries[k];
+  });
   saveCustomers();saveEntries();
   S.view='dashboard';S.selectedCustomer=null;render();
 }
