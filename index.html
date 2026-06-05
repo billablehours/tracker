@@ -208,7 +208,17 @@ function render(){
 }
 
 function renderDashboard(app){
-  const th=totalH(),tr=totalR();
+  const now=new Date();
+  const isCurrentMonth=(S.year===now.getFullYear()&&S.month===now.getMonth());
+  const visibleCustomers=isCurrentMonth
+    ? S.customers
+    : [...S.customers,...(S.archivedCustomers||[])].filter(c=>{
+        const k=`${c.id}::${monthKey(S.year,S.month)}`;
+        return S.entries[k]&&S.entries[k].length>0;
+      });
+  const th=visibleCustomers.reduce((s,c)=>s+cHours(c.id),0);
+  const tr=visibleCustomers.reduce((s,c)=>s+cHours(c.id)*effectiveRate(c),0);
+  const te=visibleCustomers.reduce((s,c)=>s+getEntries(c.id,S.year,S.month).length,0);
   const pct=Math.min(100,th/MONTHLY_GOAL*100);
   const base=S.settings.baseSalary||0;
   const totalIncome=tr+base;
@@ -248,14 +258,14 @@ function renderDashboard(app){
     <div class="stat-card">
       <div>
         <div class="s-label">Active customers</div>
-        <div class="s-value">${S.customers.length}</div>
+        <div class="s-value">${visibleCustomers.length}</div>
       </div>
       <div class="stat-icon" style="background:#f5f3ff;color:#7c3aed">${ic.users}</div>
     </div>
     <div class="stat-card">
       <div>
         <div class="s-label">Time entries</div>
-        <div class="s-value">${totalE()}</div>
+        <div class="s-value">${te}</div>
       </div>
       <div class="stat-icon" style="background:#fffbeb;color:#d97706">${ic.calendar}</div>
     </div>
@@ -274,9 +284,9 @@ function renderDashboard(app){
     <h2>Customers</h2>
     <button class="btn-primary" onclick="openAddCustomer()">${ic.plus} Add customer</button>
   </div>
-  ${S.customers.length===0
+  ${visibleCustomers.length===0
     ?`<div class="empty-state" style="padding:3rem 0">No customers yet. Add your first customer to get started.</div>`
-    :`<div class="customers-grid">${S.customers.map(renderCCard).join('')}</div>`}
+    :`<div class="customers-grid">${visibleCustomers.map(renderCCard).join('')}</div>`}
 
   <div style="margin-top:2rem">
     <div class="accordion">
