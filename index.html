@@ -136,7 +136,6 @@ svg.ic{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;str
 <script>
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 const QUICK=[0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8];
-const GOAL=125;
 const SK={C:'bht_customers',A:'bht_archived',E:'bht_entries',S:'bht_settings'};
 
 const CURR={
@@ -183,7 +182,7 @@ let S={
   active:[],    // active customers
   archived:[],  // deleted customers — kept for history
   entries:{},   // key: "customerId::YYYY-MM" → [{id,date,hours,desc}]
-  cfg:{defaultRate:0,currency:'HUF',baseSalary:0},
+  cfg:{defaultRate:0,currency:'HUF',baseSalary:0,monthlyGoal:125},
 };
 
 // ── Persistence ────────────────────────────────────────────────────────────
@@ -207,6 +206,29 @@ function getE(cid,y,m){return S.entries[eKey(cid,y,m)]||[];}
 function setE(cid,y,m,arr){S.entries[eKey(cid,y,m)]=arr;}
 function rate(c){return c.rate||S.cfg.defaultRate||0;}
 function cHours(cid){return getE(cid,S.year,S.month).reduce((s,e)=>s+e.hours,0);}
+
+// Hours logged this week (Mon-Fri) across all visible customers, for the real current week
+function weekHours(vc){
+  const now=new Date();
+  const dow=now.getDay(); // 0=Sun..6=Sat
+  const diffToMon=(dow===0?-6:1-dow);
+  const monday=new Date(now);monday.setDate(now.getDate()+diffToMon);monday.setHours(0,0,0,0);
+  const friday=new Date(monday);friday.setDate(monday.getDate()+4);friday.setHours(23,59,59,999);
+
+  let total=0;
+  vc.forEach(c=>{
+    // gather entries from current and possibly adjacent months (week may span month boundary)
+    [-1,0,1].forEach(off=>{
+      let y=S.year,m=S.month+off;
+      if(m<0){m=11;y--;} if(m>11){m=0;y++;}
+      getE(c.id,y,m).forEach(e=>{
+        const d=new Date(e.date+'T00:00:00');
+        if(d>=monday&&d<=friday) total+=e.hours;
+      });
+    });
+  });
+  return total;
+}
 function cRev(cid){const c=findC(cid);return c?cHours(cid)*rate(c):0;}
 
 // Customers visible for the currently displayed month:
@@ -234,7 +256,7 @@ function renderDashboard(app){
   const th=vc.reduce((s,c)=>s+cHours(c.id),0);
   const tr=vc.reduce((s,c)=>s+cRev(c.id),0);
   const te=vc.reduce((s,c)=>s+getE(c.id,S.year,S.month).length,0);
-  const pct=Math.min(100,th/GOAL*100);
+  const pct=Math.min(100,th/(S.cfg.monthlyGoal||125)*100);
   const base=S.cfg.baseSalary||0;
 
   app.innerHTML=`
@@ -269,7 +291,7 @@ function renderDashboard(app){
       <div class="stat-icon" style="background:#f5f3ff;color:#7c3aed">${ic.users}</div>
     </div>
     <div class="stat-card">
-      <div><div class="s-label">Time entries</div><div class="s-value">${te}</div></div>
+      <div><div class="s-label">This week (Mon–Fri)</div><div class="s-value">${weekHours(vc).toFixed(1)}h</div></div>
       <div class="stat-icon" style="background:#fffbeb;color:#d97706">${ic.calendar}</div>
     </div>
   </div>
@@ -277,10 +299,10 @@ function renderDashboard(app){
   <div class="section-card">
     <div class="section-header" style="margin-bottom:1rem">
       <span style="font-weight:500">Monthly progress</span>
-      <span style="font-size:13px;color:var(--text-secondary)">${th.toFixed(1)} / ${GOAL} hours (${pct.toFixed(1)}%)</span>
+      <span style="font-size:13px;color:var(--text-secondary)">${th.toFixed(1)} / ${S.cfg.monthlyGoal||125} hours (${pct.toFixed(1)}%)</span>
     </div>
     <div class="progress-wrap"><div class="progress-bar" style="width:${pct}%;background:${pColor(pct)}"></div></div>
-    <div class="progress-labels"><span>0h</span><span>${GOAL}h target</span></div>
+    <div class="progress-labels"><span>0h</span><span>${S.cfg.monthlyGoal||125}h target</span></div>
   </div>
 
   <div class="section-header" style="margin-bottom:1rem">
@@ -318,10 +340,17 @@ function renderDashboard(app){
             </select>
           </div>
         </div>
-        <div class="field" style="max-width:260px;margin-bottom:0">
-          <label>Base salary (monthly)</label>
-          <input id="s-sal" type="number" min="0" value="${S.cfg.baseSalary||''}" placeholder="e.g. 500000" oninput="liveCfg()">
-          <div class="field-hint">Added to billable revenue to show total income</div>
+        <div class="settings-grid" style="margin-bottom:0">
+          <div class="field">
+            <label>Base salary (monthly)</label>
+            <input id="s-sal" type="number" min="0" value="${S.cfg.baseSalary||''}" placeholder="e.g. 500000" oninput="liveCfg()">
+            <div class="field-hint">Added to billable revenue to show total income</div>
+          </div>
+          <div class="field">
+            <label>Monthly hours target</label>
+            <input id="s-goal" type="number" min="0" value="${S.cfg.monthlyGoal||125}" placeholder="e.g. 125" oninput="liveCfg()">
+            <div class="field-hint">Used for the monthly progress bar</div>
+          </div>
         </div>
         <div class="divider"></div>
         <p class="sec-label">Data management</p>
@@ -514,6 +543,7 @@ function liveCfg(){
   S.cfg.defaultRate=pN(document.getElementById('s-rate').value);
   S.cfg.currency=document.getElementById('s-cur').value;
   S.cfg.baseSalary=pN(document.getElementById('s-sal').value);
+  S.cfg.monthlyGoal=pN(document.getElementById('s-goal').value)||125;
   saveCfg();
 }
 function openAddCustomer(){S.modal={type:'customer'};render();}
