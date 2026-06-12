@@ -208,12 +208,34 @@ function rate(c){return c.rate||S.cfg.defaultRate||0;}
 function cHours(cid){return getE(cid,S.year,S.month).reduce((s,e)=>s+e.hours,0);}
 
 // Hours logged this week (Mon-Fri) across all visible customers, for the real current week
-function weekHours(vc){
+function getWeekRange(){
   const now=new Date();
   const dow=now.getDay(); // 0=Sun..6=Sat
   const diffToMon=(dow===0?-6:1-dow);
   const monday=new Date(now);monday.setDate(now.getDate()+diffToMon);monday.setHours(0,0,0,0);
   const friday=new Date(monday);friday.setDate(monday.getDate()+4);friday.setHours(23,59,59,999);
+  return {monday,friday};
+}
+function weekKey(){
+  const {monday}=getWeekRange();
+  return `${monday.getFullYear()}-${p2(monday.getMonth()+1)}-${p2(monday.getDate())}`;
+}
+function getWeekExpected(){
+  try{
+    const r=localStorage.getItem('bht_week_expected');
+    if(r){const o=JSON.parse(r);if(o[weekKey()]!==undefined)return o[weekKey()];}
+  }catch(e){}
+  return 40;
+}
+function setWeekExpected(val){
+  let o={};
+  try{const r=localStorage.getItem('bht_week_expected');if(r)o=JSON.parse(r);}catch(e){}
+  o[weekKey()]=val;
+  try{localStorage.setItem('bht_week_expected',JSON.stringify(o));}catch(e){}
+}
+
+function weekHours(vc){
+  const {monday,friday}=getWeekRange();
 
   let total=0;
   vc.forEach(c=>{
@@ -286,13 +308,17 @@ function renderDashboard(app){
       </div>
       <div class="stat-icon" style="background:#f0fdf4;color:#16a34a">${ic.dollar}</div>
     </div>
+    <div class="stat-card" style="cursor:pointer" onclick="openWeekModal()">
+      <div>
+        <div class="s-label">This week (Mon–Fri)</div>
+        <div class="s-value">${weekHours(vc).toFixed(1)}h <span style="font-size:11px;color:var(--text-hint);font-weight:400">billable</span></div>
+        <div class="s-sub">${Math.max(0,getWeekExpected()-weekHours(vc)).toFixed(1)}h non-billable &middot; ${getWeekExpected()}h expected</div>
+      </div>
+      <div class="stat-icon" style="background:#fffbeb;color:#d97706">${ic.calendar}</div>
+    </div>
     <div class="stat-card">
       <div><div class="s-label">Active customers</div><div class="s-value">${S.active.length}</div></div>
       <div class="stat-icon" style="background:#f5f3ff;color:#7c3aed">${ic.users}</div>
-    </div>
-    <div class="stat-card">
-      <div><div class="s-label">This week (Mon–Fri)</div><div class="s-value">${weekHours(vc).toFixed(1)}h</div></div>
-      <div class="stat-icon" style="background:#fffbeb;color:#d97706">${ic.calendar}</div>
     </div>
   </div>
 
@@ -516,6 +542,31 @@ function renderModal(app){
         <button class="btn-ok-m" onclick="saveEntry('${m.cid}','${m.eid||''}')">${m.eid?'Save changes':'Add entry'}</button>
       </div>
     </div>`;
+  } else if(m.type==='week'){
+    const billable=weekHours(visibleCustomers());
+    const expected=getWeekExpected();
+    const nonBillable=Math.max(0,expected-billable);
+    inner=`<div class="modal">
+      <div class="modal-header"><h2>This week's hours</h2><button class="btn-ghost" onclick="closeModal()">${ic.x}</button></div>
+      <div class="field">
+        <label>Billable hours logged this week</label>
+        <div class="cpill" style="font-weight:500">${billable.toFixed(1)}h</div>
+        <div class="field-hint">Calculated automatically from your time entries (Mon–Fri)</div>
+      </div>
+      <div class="field">
+        <label>Expected working hours this week</label>
+        <input id="m-week-exp" type="number" min="0" step="0.5" value="${expected}" placeholder="e.g. 40" oninput="updateWeekPreview(${billable})">
+        <div class="field-hint">Default is 40. Reduce by 8 for each public holiday this week.</div>
+      </div>
+      <div class="field">
+        <label>Non-billable hours (calculated)</label>
+        <div class="cpill" style="font-weight:500;color:var(--amber)" id="m-week-nb">${nonBillable.toFixed(1)}h</div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel-m" onclick="closeModal()">Cancel</button>
+        <button class="btn-ok-m" onclick="saveWeekExpected()">Save</button>
+      </div>
+    </div>`;
   }
   app.innerHTML=`<div class="overlay" onclick="if(event.target===this)closeModal()">${inner}</div>`;
 }
@@ -546,6 +597,18 @@ function liveCfg(){
   S.cfg.monthlyGoal=pN(document.getElementById('s-goal').value)||125;
   saveCfg();
 }
+function openWeekModal(){S.modal={type:'week'};render();}
+function updateWeekPreview(billable){
+  const exp=pN(document.getElementById('m-week-exp').value)||0;
+  const nb=Math.max(0,exp-billable);
+  document.getElementById('m-week-nb').textContent=nb.toFixed(1)+'h';
+}
+function saveWeekExpected(){
+  const exp=pN(document.getElementById('m-week-exp').value)||0;
+  setWeekExpected(exp);
+  S.modal=null;render();
+}
+
 function openAddCustomer(){S.modal={type:'customer'};render();}
 function openEditCustomer(id){S.modal={type:'customer',id};render();}
 function openAddEntry(cid){S.mh=0.5;S.modal={type:'entry',cid};render();}
