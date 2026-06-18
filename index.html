@@ -216,7 +216,23 @@ function getE(cid,y,m){return S.entries[eKey(cid,y,m)]||[];}
 function setE(cid,y,m,arr){S.entries[eKey(cid,y,m)]=arr;}
 function rate(c){return c.rate||S.cfg.defaultRate||0;}
 function cHours(cid){return getE(cid,S.year,S.month).reduce((s,e)=>s+e.hours,0);}
-function cRev(cid){const c=findC(cid);return c?cHours(cid)*rate(c):0;}
+function cRev(cid){const c=findC(cid);if(!c)return 0;return cHours(cid)*rate(c);}
+
+// Global overtime: hours beyond monthly goal get 1.5x
+// Returns {billable, overtime, total} revenue for the whole month
+function globalRevBreakdown(vc){
+  const goal=S.cfg.monthlyGoal||125;
+  const th=vc.reduce((s,c)=>s+cHours(c.id),0);
+  const tr=vc.reduce((s,c)=>s+cRev(c.id),0);
+  if(th<=goal) return {billable:tr,overtime:0,total:tr,overHours:0};
+  // ratio of normal vs overtime hours
+  const overHours=th-goal;
+  const normalHours=goal;
+  // average rate weighted by hours
+  const avgRate=th>0?tr/th:0;
+  const overtime=overHours*avgRate*0.5; // the extra 0.5x on top of normal pay
+  return {billable:tr,overtime,total:tr+overtime,overHours};
+}
 
 function getWeekRange(){
   const now=new Date();const dow=now.getDay();const diffToMon=(dow===0?-6:1-dow);
@@ -260,6 +276,7 @@ function renderDashboard(app){
   const tr=vc.reduce((s,c)=>s+cRev(c.id),0);
   const goal=S.cfg.monthlyGoal||125;
   const pct=Math.min(100,th/goal*100);
+  const grev=globalRevBreakdown(vc);
   const base=S.cfg.baseSalary||0;
   const wh=weekHours(vc),we=getWeekExpected(),wnb=Math.max(0,we-wh);
 
@@ -279,30 +296,23 @@ function renderDashboard(app){
     </div>
   </div>
 
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div><div class="s-label">Total hours</div><div class="s-value">${th.toFixed(1)}</div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.5rem">
+    <div class="stat-card" style="cursor:pointer" onclick="openWeekModal()">
+      <div style="min-width:0;flex:1">
+        <div class="s-label">Total hours</div>
+        <div class="s-value" style="font-size:${grev.total>=10000?'15px':'18px'}">${th.toFixed(1)}</div>
+        <div class="s-label" style="margin-top:10px">This week (Mon–Fri)</div>
+        <div class="s-value" style="font-size:${grev.total>=10000?'15px':'18px'}">${wh.toFixed(1)}h</div>
+      </div>
       <div class="stat-icon" style="background:#eff6ff;color:#2563eb">${ic.clock}</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card" style="cursor:pointer" onclick="openRevenueModal()">
       <div style="min-width:0;flex:1">
         <div class="s-label">Billable revenue</div>
-        <div class="s-value" style="font-size:${tr>=10000?'15px':'18px'}">${fmtMoney(tr)}</div>
-        ${base>0?`<div class="s-sub">+ ${fmtMoney(base)} base = <strong>${fmtMoney(tr+base)}</strong></div>`:''}
+        <div class="s-value" style="font-size:${grev.total>=10000?'15px':'18px'}">${fmtMoney(grev.total)}</div>
+        ${base>0?`<div class="s-label" style="margin-top:10px">Total income</div><div class="s-value" style="font-size:${(grev.total+base)>=10000?'15px':'18px'}">${fmtMoney(grev.total+base)}</div>`:''}
       </div>
       <div class="stat-icon" style="background:#f0fdf4;color:#16a34a">${ic.dollar}</div>
-    </div>
-    <div class="stat-card" style="cursor:pointer" onclick="openWeekModal()">
-      <div>
-        <div class="s-label">This week (Mon–Fri)</div>
-        <div class="s-value" style="font-size:18px">${wh.toFixed(1)}h <span style="font-size:11px;color:var(--text-hint);font-weight:400">billable</span></div>
-        <div class="s-sub">${wnb.toFixed(1)}h non-billable &middot; ${we}h expected</div>
-      </div>
-      <div class="stat-icon" style="background:#fffbeb;color:#d97706">${ic.calendar}</div>
-    </div>
-    <div class="stat-card">
-      <div><div class="s-label">Active customers</div><div class="s-value">${S.active.length}</div></div>
-      <div class="stat-icon" style="background:#f5f3ff;color:#7c3aed">${ic.users}</div>
     </div>
   </div>
 
@@ -415,7 +425,7 @@ function renderDetail(app){
   const arch=isArchived(c.id);
   const entries=getE(c.id,S.year,S.month);
   const h=entries.reduce((s,e)=>s+e.hours,0);
-  const r=rate(c),rev=h*r;
+  const r=rate(c),rev=cRev(c.id);
   let tBar='';
   if(c.target){
     const p=Math.min(100,h/c.target*100);
@@ -529,6 +539,57 @@ function renderModal(app){
         <button class="btn-ok-m" onclick="saveEntry('${m.cid}','${m.eid||''}')">${m.eid?'Save changes':'Add entry'}</button>
       </div>
     </div>`;
+  } else if(m.type==='revenue'){
+    const vc=visibleCustomers();
+    const g=globalRevBreakdown(vc);
+    const base=S.cfg.baseSalary||0;
+    const goal=S.cfg.monthlyGoal||125;
+    const th=vc.reduce((s,c)=>s+cHours(c.id),0);
+    const normalHours=Math.min(th,goal);
+    const overHours=Math.max(0,th-goal);
+    const normalRev=g.billable-(overHours>0?overHours*(g.billable/th):0);
+    const r=th>0?g.billable/th:0;
+    inner=`<div class="modal">
+      <div class="modal-header"><h2>Revenue breakdown</h2><button class="btn-ghost" onclick="closeModal()">${ic.x}</button></div>
+      <div class="field">
+        <label>Standard hours</label>
+        <div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px">
+          <span style="font-size:14px">${normalHours.toFixed(1)}h × avg rate</span>
+          <span style="font-weight:500">${fmtMoney(normalHours*r)}</span>
+        </div>
+      </div>
+      ${overHours>0?`<div class="field">
+        <label>Over ${goal}h — accelerated ×1.5</label>
+        <div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px">
+          <span style="font-size:14px">${overHours.toFixed(1)}h × avg rate × 1.5</span>
+          <span style="font-weight:500;color:var(--green)">${fmtMoney(overHours*r*1.5)}</span>
+        </div>
+      </div>`:''}
+      <div class="field">
+        <label>Total billable revenue</label>
+        <div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px">
+          <span style="font-size:14px">All hours combined</span>
+          <span style="font-weight:600">${fmtMoney(g.total)}</span>
+        </div>
+      </div>
+      ${base>0?`<div class="field">
+        <label>Base salary</label>
+        <div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px">
+          <span style="font-size:14px">Monthly fixed salary</span>
+          <span style="font-weight:500">${fmtMoney(base)}</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Total income</label>
+        <div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;border-color:var(--green)">
+          <span style="font-size:14px;font-weight:600">Billable + Base salary</span>
+          <span style="font-weight:700;color:var(--green)">${fmtMoney(g.total+base)}</span>
+        </div>
+      </div>`:''}
+      <div class="modal-actions">
+        <button class="btn-ok-m" onclick="closeModal()">Close</button>
+      </div>
+    </div>`;
   } else if(m.type==='week'){
     const billable=weekHours(visibleCustomers());
     const expected=getWeekExpected();
@@ -588,6 +649,7 @@ function liveCfg(){
   S.cfg.monthlyGoal=pN(document.getElementById('s-goal').value)||125;
   saveCfg();
 }
+function openRevenueModal(){S.modal={type:'revenue'};render();}
 function openWeekModal(){S.modal={type:'week'};render();}
 function updateWeekPreview(billable){
   const exp=pN(document.getElementById('m-week-exp').value)||0;
