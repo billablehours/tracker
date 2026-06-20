@@ -10,17 +10,17 @@
 *{box-sizing:border-box;margin:0;padding:0}
 
 :root,[data-theme="light"]{
-  --bg:#f8f7f4;--surface:#fff;--border:#e8e6e0;--border2:#d0cdc5;
-  --text:#1a1917;--text-secondary:#6b6760;--text-hint:#9e9b94;
-  --blue:#2563eb;--blue-dark:#1d4ed8;
-  --green:#16a34a;--red:#dc2626;--amber:#d97706;--purple:#7c3aed;
+  --bg:#f4f6f8;--surface:#fff;--border:#dde3e9;--border2:#c3ccd6;
+  --text:#1a2530;--text-secondary:#5c6b7a;--text-hint:#94a3b3;
+  --blue:#1860a8;--blue-dark:#0f4a87;
+  --green:#16a34a;--red:#dc2626;--amber:#d97706;--purple:#1860a8;
   --radius:10px;--radius-lg:14px;
 }
 [data-theme="dark"]{
-  --bg:#0f1117;--surface:#1e2330;--border:#2d3348;--border2:#3a4060;
-  --text:#f1f5f9;--text-secondary:#94a3b8;--text-hint:#4b5675;
-  --blue:#6c8aff;--blue-dark:#5470e8;
-  --green:#4ade80;--red:#f87171;--amber:#fbbf24;--purple:#c084fc;
+  --bg:#10161d;--surface:#1a232e;--border:#2a3744;--border2:#3a4a5a;
+  --text:#eef2f6;--text-secondary:#9aabbb;--text-hint:#5d6f81;
+  --blue:#5b9bd9;--blue-dark:#3f80c0;
+  --green:#4ade80;--red:#f87171;--amber:#fbbf24;--purple:#5b9bd9;
   --radius:10px;--radius-lg:14px;
 }
 
@@ -178,6 +178,8 @@ const ic={
   moon:'<svg class="ic" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
   sun:'<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
   warn:'<svg class="ic" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  copy:'<svg class="ic" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
+  clipboard:'<svg class="ic" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>',
 };
 
 function today(){const d=new Date();return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`}
@@ -218,7 +220,7 @@ function rate(c){return c.rate||S.cfg.defaultRate||0;}
 function cHours(cid){return getE(cid,S.year,S.month).reduce((s,e)=>s+e.hours,0);}
 function cRev(cid){const c=findC(cid);if(!c)return 0;return cHours(cid)*rate(c);}
 
-// Global overtime: hours beyond monthly goal get 1.5x
+// Global overtime: hours beyond monthly goal get 2x
 // Returns {billable, overtime, total} revenue for the whole month
 function globalRevBreakdown(vc){
   const goal=S.cfg.monthlyGoal||125;
@@ -230,7 +232,7 @@ function globalRevBreakdown(vc){
   const normalHours=goal;
   // average rate weighted by hours
   const avgRate=th>0?tr/th:0;
-  const overtime=overHours*avgRate*0.5; // the extra 0.5x on top of normal pay
+  const overtime=overHours*avgRate*1.0; // the extra 1.0x on top of normal pay = 2x total
   return {billable:tr,overtime,total:tr+overtime,overHours};
 }
 
@@ -256,6 +258,14 @@ function weekHours(vc){
     getE(c.id,y,m).forEach(e=>{const d=new Date(e.date+'T00:00:00');if(d>=monday&&d<=friday)total+=e.hours;});
   });});return total;
 }
+function weekHoursForCustomer(cid){
+  const {monday,friday}=getWeekRange();let total=0;
+  [-1,0,1].forEach(off=>{
+    let y=S.year,m=S.month+off;if(m<0){m=11;y--;}if(m>11){m=0;y++;}
+    getE(cid,y,m).forEach(e=>{const d=new Date(e.date+'T00:00:00');if(d>=monday&&d<=friday)total+=e.hours;});
+  });
+  return total;
+}
 function visibleCustomers(){
   const now=new Date();const isCurrent=(S.year===now.getFullYear()&&S.month===now.getMonth());
   if(isCurrent)return S.active;
@@ -279,6 +289,9 @@ function renderDashboard(app){
   const grev=globalRevBreakdown(vc);
   const base=S.cfg.baseSalary||0;
   const wh=weekHours(vc),we=getWeekExpected(),wnb=Math.max(0,we-wh);
+  let payoutMonthIdx=S.month+2,payoutYear=S.year;
+  if(payoutMonthIdx>11){payoutMonthIdx-=12;payoutYear++;}
+  const payoutLabel=`Total income in ${MONTHS[payoutMonthIdx]}`;
 
   app.innerHTML=`
 <div class="page">
@@ -304,13 +317,13 @@ function renderDashboard(app){
         <div class="s-label" style="margin-top:10px">This week (Mon–Fri)</div>
         <div class="s-value" style="font-size:${grev.total>=10000?'15px':'18px'}">${wh.toFixed(1)}h</div>
       </div>
-      <div class="stat-icon" style="background:#eff6ff;color:#2563eb">${ic.clock}</div>
+      <div class="stat-icon" style="background:#e3edf6;color:#1860a8">${ic.clock}</div>
     </div>
     <div class="stat-card" style="cursor:pointer" onclick="openRevenueModal()">
       <div style="min-width:0;flex:1">
         <div class="s-label">Billable revenue</div>
         <div class="s-value" style="font-size:${grev.total>=10000?'15px':'18px'}">${fmtMoney(grev.total)}</div>
-        ${base>0?`<div class="s-label" style="margin-top:10px">Total income</div><div class="s-value" style="font-size:${(grev.total+base)>=10000?'15px':'18px'}">${fmtMoney(grev.total+base)}</div>`:''}
+        ${base>0?`<div class="s-label" style="margin-top:10px">${payoutLabel}</div><div class="s-value" style="font-size:${(grev.total+base)>=10000?'15px':'18px'}">${fmtMoney(grev.total+base)}</div>`:''}
       </div>
       <div class="stat-icon" style="background:#f0fdf4;color:#16a34a">${ic.dollar}</div>
     </div>
@@ -369,6 +382,8 @@ function renderDashboard(app){
             <div class="field-hint">Used for the progress bar</div>
           </div>
         </div>
+        <button class="btn-primary" onclick="saveCfgWithFeedback()" style="margin-bottom:0">${ic.gear} Save settings</button>
+        <span id="cfg-saved-msg" style="display:none;color:var(--green);font-size:13px;margin-left:10px;font-weight:500">Saved ✓</span>
         <div class="divider"></div>
         <p class="sec-label">Data management</p>
         <div class="data-warn">
@@ -415,7 +430,7 @@ function renderCCard(c){
     </div>
     <div class="c-row"><span class="c-lbl">Hours this month:</span><span class="c-val">${h.toFixed(1)}</span></div>
     <div class="c-row"><span class="c-lbl">Revenue:</span><span class="c-val-green">${fmtMoney(rev)}</span></div>
-    <div class="c-row"><span class="c-lbl">Hourly rate:</span><span class="c-val">${fmtMoney(rate(c))}/hr</span></div>
+    <div class="c-row"><span class="c-lbl">This week:</span><span class="c-val">${weekHoursForCustomer(c.id).toFixed(1)}h</span></div>
     ${bar}
   </div>`;
 }
@@ -455,6 +470,7 @@ function renderDetail(app){
             ${e.desc?`<div class="entry-desc">${e.desc}</div>`:''}
           </div>
           <div class="entry-actions">
+            ${arch?'':`<button class="btn-ghost" onclick="copyEntryToToday('${c.id}','${e.id}')" title="Copy to today">${ic.copy}</button>`}
             ${arch?'':`<button class="btn-ghost" onclick="openEditEntry('${c.id}','${e.id}')">${ic.edit}</button>`}
             ${arch?'':`<button class="btn-ghost" onclick="deleteEntry('${c.id}','${e.id}')">${ic.trash}</button>`}
           </div>
@@ -477,15 +493,18 @@ function renderDetail(app){
     </div>
   </div>
   <div class="stats-grid" style="margin-bottom:1.5rem">
-    <div class="stat-card"><div><div class="s-label">Hours this month</div><div class="s-value">${h.toFixed(1)}</div></div><div class="stat-icon" style="background:#eff6ff;color:#2563eb">${ic.clock}</div></div>
+    <div class="stat-card"><div><div class="s-label">Hours this month</div><div class="s-value">${h.toFixed(1)}</div><div class="s-label" style="margin-top:10px">This week</div><div class="s-value">${weekHoursForCustomer(c.id).toFixed(1)}h</div></div><div class="stat-icon" style="background:#e3edf6;color:#1860a8">${ic.clock}</div></div>
     <div class="stat-card"><div><div class="s-label">Revenue this month</div><div class="s-value" style="font-size:15px">${fmtMoney(rev)}</div></div><div class="stat-icon" style="background:#f0fdf4;color:#16a34a">${ic.dollar}</div></div>
-    <div class="stat-card"><div><div class="s-label">Hourly rate</div><div class="s-value" style="font-size:15px">${fmtMoney(r)}/hr</div></div><div class="stat-icon" style="background:#f5f3ff;color:#7c3aed">${ic.dollar}</div></div>
+    <div class="stat-card"><div><div class="s-label">Hourly rate</div><div class="s-value" style="font-size:15px">${fmtMoney(r)}/hr</div></div><div class="stat-icon" style="background:#e3edf6;color:#1860a8">${ic.dollar}</div></div>
   </div>
   ${tBar}
   <div class="section-card">
     <div class="section-header">
       <h2>Time entries</h2>
-      ${arch?'':`<button class="btn-primary" onclick="openAddEntry('${c.id}')">${ic.plus} Add time entry</button>`}
+      <div style="display:flex;gap:8px">
+        ${arch?'':`<button class="btn-secondary" onclick="copyWeeklyComments('${c.id}')">${ic.clipboard} Copy weekly comments</button>`}
+        ${arch?'':`<button class="btn-primary" onclick="openAddEntry('${c.id}')">${ic.plus} Add time entry</button>`}
+      </div>
     </div>
     ${entriesHtml}
   </div>
@@ -549,6 +568,9 @@ function renderModal(app){
     const overHours=Math.max(0,th-goal);
     const normalRev=g.billable-(overHours>0?overHours*(g.billable/th):0);
     const r=th>0?g.billable/th:0;
+    let pmIdx=S.month+2,pmYear=S.year;
+    if(pmIdx>11){pmIdx-=12;pmYear++;}
+    const pmLabel=MONTHS[pmIdx];
     inner=`<div class="modal">
       <div class="modal-header"><h2>Revenue breakdown</h2><button class="btn-ghost" onclick="closeModal()">${ic.x}</button></div>
       <div class="field">
@@ -559,10 +581,10 @@ function renderModal(app){
         </div>
       </div>
       ${overHours>0?`<div class="field">
-        <label>Over ${goal}h — accelerated ×1.5</label>
+        <label>Over ${goal}h — accelerated ×2</label>
         <div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px">
-          <span style="font-size:14px">${overHours.toFixed(1)}h × avg rate × 1.5</span>
-          <span style="font-weight:500;color:var(--green)">${fmtMoney(overHours*r*1.5)}</span>
+          <span style="font-size:14px">${overHours.toFixed(1)}h × avg rate × 2</span>
+          <span style="font-weight:500;color:var(--green)">${fmtMoney(overHours*r*2)}</span>
         </div>
       </div>`:''}
       <div class="field">
@@ -580,7 +602,7 @@ function renderModal(app){
         </div>
       </div>
       <div class="field">
-        <label>Total income</label>
+        <label>Total income in ${pmLabel}</label>
         <div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;border-color:var(--green)">
           <span style="font-size:14px;font-weight:600">Billable + Base salary</span>
           <span style="font-weight:700;color:var(--green)">${fmtMoney(g.total+base)}</span>
@@ -649,6 +671,14 @@ function liveCfg(){
   S.cfg.monthlyGoal=pN(document.getElementById('s-goal').value)||125;
   saveCfg();
 }
+function saveCfgWithFeedback(){
+  liveCfg();
+  const msg=document.getElementById('cfg-saved-msg');
+  if(msg){
+    msg.style.display='inline';
+    setTimeout(()=>{if(msg)msg.style.display='none';},2000);
+  }
+}
 function openRevenueModal(){S.modal={type:'revenue'};render();}
 function openWeekModal(){S.modal={type:'week'};render();}
 function updateWeekPreview(billable){
@@ -679,6 +709,75 @@ function clearLogo(){
   prev.replaceWith(div);
 }
 
+function copyEntryToToday(cid,eid){
+  const src=getE(cid,S.year,S.month).find(e=>e.id===eid);
+  if(!src)return;
+  const now=new Date();
+  const ty=now.getFullYear(),tm=now.getMonth();
+  const arr=getE(cid,ty,tm);
+  arr.push({id:uid(),date:today(),hours:src.hours,desc:src.desc||''});
+  setE(cid,ty,tm,arr);
+  saveEntries();
+  // jump to the month/year of today so the user sees the new entry
+  S.year=ty;S.month=tm;
+  render();
+}
+
+function showToast(msg){
+  let t=document.getElementById('app-toast');
+  if(!t){
+    t=document.createElement('div');
+    t.id='app-toast';
+    t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--surface);padding:10px 18px;border-radius:99px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px;z-index:200;opacity:0;transition:opacity 0.25s,transform 0.25s;box-shadow:0 4px 12px rgba(0,0,0,0.2)';
+    document.body.appendChild(t);
+  }
+  t.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>'+msg+'</span>';
+  requestAnimationFrame(()=>{t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';});
+  clearTimeout(window._toastTimer);
+  window._toastTimer=setTimeout(()=>{
+    t.style.opacity='0';t.style.transform='translateX(-50%) translateY(20px)';
+  },2200);
+}
+
+function copyWeeklyComments(cid){
+  const {monday,friday}=getWeekRange();
+  const days=[];
+  for(let i=0;i<5;i++){
+    const d=new Date(monday);d.setDate(monday.getDate()+i);
+    days.push(`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`);
+  }
+  const seen=new Set();
+  const comments=[];
+  days.forEach(dateStr=>{
+    const y=parseInt(dateStr.slice(0,4)),m=parseInt(dateStr.slice(5,7))-1;
+    getE(cid,y,m).forEach(e=>{
+      if(e.date!==dateStr)return;
+      const desc=(e.desc||'').trim();
+      if(!desc)return;
+      if(seen.has(desc))return;
+      seen.add(desc);
+      comments.push(desc);
+    });
+  });
+  const text=comments.join(' + ');
+  if(!text){showToast('No comments found for this week');return;}
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>{
+      showToast('Comments copied');
+    }).catch(()=>{fallbackCopy(text);});
+  } else {
+    fallbackCopy(text);
+  }
+}
+function fallbackCopy(text){
+  const ta=document.createElement('textarea');
+  ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);ta.select();
+  try{document.execCommand('copy');showToast('Comments copied');}
+  catch(e){alert('Could not copy automatically. Here are the comments:\n\n'+text);}
+  document.body.removeChild(ta);
+}
+
 function openAddCustomer(){_pendingLogo=undefined;S.modal={type:'customer'};render();}
 function openEditCustomer(id){_pendingLogo=undefined;S.modal={type:'customer',id};render();}
 function openAddEntry(cid){S.mh=0.5;S.modal={type:'entry',cid};render();}
@@ -700,10 +799,37 @@ function saveEntry(cid,eid){
   const date=document.getElementById('m-date').value;
   const hours=S.mh;
   const desc=document.getElementById('m-desc').value.trim();
-  const arr=getE(cid,S.year,S.month);
-  if(eid){const i=arr.findIndex(e=>e.id===eid);if(i>=0)arr[i]={...arr[i],date,hours,desc};}
-  else arr.push({id:uid(),date,hours,desc});
-  setE(cid,S.year,S.month,arr);saveEntries();S.modal=null;render();
+  if(!date)return;
+  const dateParts=date.split('-');
+  const entryYear=parseInt(dateParts[0]),entryMonth=parseInt(dateParts[1])-1;
+
+  if(eid){
+    // Editing: remove from old month bucket first (in case date changed), then add to correct bucket
+    const oldArr=getE(cid,S.year,S.month);
+    const idx=oldArr.findIndex(e=>e.id===eid);
+    const existing=idx>=0?oldArr[idx]:null;
+    if(idx>=0){oldArr.splice(idx,1);setE(cid,S.year,S.month,oldArr);}
+    const targetArr=getE(cid,entryYear,entryMonth);
+    targetArr.push({id:eid,date,hours,desc});
+    setE(cid,entryYear,entryMonth,targetArr);
+  } else {
+    const targetArr=getE(cid,entryYear,entryMonth);
+    targetArr.push({id:uid(),date,hours,desc});
+    setE(cid,entryYear,entryMonth,targetArr);
+  }
+  saveEntries();
+  S.modal=null;
+
+  const differentMonth=(entryYear!==S.year||entryMonth!==S.month);
+  if(differentMonth){
+    const monthName=MONTHS[entryMonth];
+    showToast(`Entry saved to ${monthName} ${entryYear}`);
+    // jump the view to that month so the user can see it
+    S.year=entryYear;S.month=entryMonth;
+  } else {
+    showToast('Entry saved');
+  }
+  render();
 }
 function deleteEntry(cid,eid){
   if(!confirm('Delete this entry?'))return;
