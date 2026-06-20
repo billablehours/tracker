@@ -439,15 +439,26 @@ function renderDashboard(app){
     <div class="progress-labels"><span>0h</span><span>${goal}h target</span></div>
   </div>
 
-  <div class="section-header" style="margin-bottom:1rem">
-    <h2>Customers</h2>
-    <button class="btn-primary" onclick="openAddCustomer()">${ic.plus} Add customer</button>
+  <div class="accordion">
+    <div class="acc-hdr" onclick="toggleAcc('cust')">
+      <div class="acc-hdr-left">
+        <div class="acc-icon">${ic.users}</div>
+        <div><div class="acc-title">Customers</div><div class="acc-sub">${vc.length} ${vc.length===1?'customer':'customers'} this month</div></div>
+      </div>
+      <div class="acc-chev open" id="chev-cust"><svg class="ic" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg></div>
+    </div>
+    <div class="acc-body open" id="body-cust">
+      <div class="section-header" style="margin-bottom:1rem">
+        <span style="font-weight:500;font-size:14px;color:var(--text-secondary)">Manage your customers</span>
+        <button class="btn-primary" onclick="openAddCustomer()">${ic.plus} Add customer</button>
+      </div>
+      ${vc.length===0
+        ?'<div class="empty-state" style="padding:3rem 0">No customers yet. Add your first customer to get started.</div>'
+        :`<div class="customers-grid">${vc.map(c=>renderCCard(c)).join('')}</div>`}
+    </div>
   </div>
-  ${vc.length===0
-    ?'<div class="empty-state" style="padding:3rem 0">No customers yet. Add your first customer to get started.</div>'
-    :`<div class="customers-grid">${vc.map(c=>renderCCard(c)).join('')}</div>`}
 
-  <div style="margin-top:2rem">
+  <div style="margin-top:1rem">
     <div class="accordion">
       <div class="acc-hdr" onclick="toggleAcc('an')">
         <div class="acc-hdr-left">
