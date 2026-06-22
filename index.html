@@ -6,6 +6,7 @@
 <title>Billable Hours Tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 
@@ -180,6 +181,7 @@ const ic={
   warn:'<svg class="ic" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
   copy:'<svg class="ic" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
   clipboard:'<svg class="ic" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>',
+  excel:'<svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>',
 };
 
 function today(){const d=new Date();return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`}
@@ -361,26 +363,31 @@ function renderIncomeChart(){
   const maxTotal=Math.max(1,...monthData.map(m=>m.total));
   const numMonths=monthData.length;
   const topPad=28;
-  const chartH=220,barW=Math.min(64,560/numMonths);
-  const chartW=Math.max(360,numMonths*(barW+20));
-  const gap=(chartW-barW*numMonths)/(numMonths+1);
-  // round niceMax to a sensible currency step
+  const chartH=220;
+  const chartW=Math.max(360,numMonths*74);
   const step=maxTotal>200000?50000:maxTotal>20000?5000:maxTotal>2000?500:20;
   const niceMax=Math.ceil(maxTotal/step)*step||step;
+  const xFor=i=>numMonths===1?chartW/2:(i/(numMonths-1))*chartW;
+  const yFor=v=>(chartH+topPad)-((v/niceMax)*chartH);
 
-  let bars='';
-  monthData.forEach((m,i)=>{
-    const x=gap+i*(barW+gap);
-    const segH=(m.total/niceMax)*chartH;
-    const y=(chartH+topPad)-segH;
-    const safeWork=m.workLabel.replace(/'/g,"\\'");
-    bars+=`<rect x="${x}" y="${y}" width="${barW}" height="${segH}" fill="var(--green)" rx="2" style="cursor:pointer"
-        onmousemove="chartTooltip(event,'Income in ${m.label}','from work in ${safeWork}')"
-        onmouseleave="hideChartTooltip()"></rect>
-      <text x="${x+barW/2}" y="${chartH+topPad+20}" text-anchor="middle" font-size="12" fill="var(--text-secondary)" font-family="'DM Sans',sans-serif">${m.label}</text>
-      ${m.total>0?`<text x="${x+barW/2}" y="${Math.max(y-8,12)}" text-anchor="middle" font-size="11" font-weight="600" fill="var(--text)" font-family="'DM Sans',sans-serif">${fmtMoney(m.total)}</text>`:''}
-    `;
-  });
+  const points=monthData.map((m,i)=>({x:xFor(i),y:yFor(m.total),m}));
+  const linePoints=points.map(p=>`${p.x},${p.y}`).join(' ');
+
+  let line='';
+  if(points.length>1){
+    line=`<polyline points="${linePoints}" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></polyline>`;
+  }
+
+  const dots=points.map(p=>{
+    const safeLabel=p.m.label.replace(/'/g,"\\'");
+    const safeWork=p.m.workLabel.replace(/'/g,"\\'");
+    const value=fmtMoney(p.m.total).replace(/'/g,"\\'");
+    return `<circle cx="${p.x}" cy="${p.y}" r="4.5" fill="var(--green)" stroke="var(--surface)" stroke-width="2" style="cursor:pointer"
+        onmousemove="chartTooltip(event,'Income in ${safeLabel}','${value} · from work in ${safeWork}')"
+        onmouseleave="hideChartTooltip()"></circle>
+      <text x="${p.x}" y="${chartH+topPad+22}" text-anchor="middle" font-size="12" fill="var(--text-secondary)" font-family="'DM Sans',sans-serif">${p.m.label}</text>
+      ${p.m.total>0?`<text x="${p.x}" y="${Math.max(p.y-10,12)}" text-anchor="middle" font-size="11" font-weight="600" fill="var(--text)" font-family="'DM Sans',sans-serif">${fmtMoney(p.m.total)}</text>`:''}`;
+  }).join('');
 
   let gridLines='';
   [0,0.25,0.5,0.75,1].forEach(frac=>{
@@ -392,13 +399,14 @@ function renderIncomeChart(){
 
   return `
     <div style="overflow-x:auto">
-      <svg viewBox="-50 0 ${chartW+30} ${chartH+topPad+40}" width="100%" style="min-width:${Math.min(480,chartW)}px;max-width:760px;display:block;margin:0 auto" font-family="'DM Sans',sans-serif">
+      <svg viewBox="-55 0 ${chartW+80} ${chartH+topPad+50}" width="100%" style="min-width:${Math.min(480,chartW)}px;max-width:760px;display:block;margin:0 auto" font-family="'DM Sans',sans-serif">
         ${gridLines}
-        ${bars}
+        ${line}
+        ${dots}
       </svg>
     </div>
     <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);font-size:12px;color:var(--text-hint)">
-      Each bar shows income received that month — earned from hours worked 2 months earlier (e.g. August income reflects June work).
+      The line shows income received each month — earned from hours worked 2 months earlier (e.g. August income reflects June work).
     </div>
   `;
 }
@@ -496,33 +504,44 @@ function renderDashboard(app){
     </div>
   </div>
 
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.5rem">
-    <div class="stat-card" style="cursor:pointer" onclick="openWeekModal()">
-      <div style="min-width:0;flex:1">
-        <div class="s-label">Total hours</div>
-        <div class="s-value" style="font-size:${grev.total>=10000?'15px':'18px'}">${th.toFixed(1)}</div>
-        <div class="s-label" style="margin-top:10px">This week (Mon–Fri)</div>
-        <div class="s-value" style="font-size:${grev.total>=10000?'15px':'18px'}">${wh.toFixed(1)}h</div>
+  <div class="accordion">
+    <div class="acc-hdr" onclick="toggleAcc('dash')">
+      <div class="acc-hdr-left">
+        <div class="acc-icon">${ic.clock}</div>
+        <div><div class="acc-title">Dashboard</div><div class="acc-sub">${MONTHS[S.month]} ${S.year} overview</div></div>
       </div>
-      <div class="stat-icon" style="background:#e3edf6;color:#1860a8">${ic.clock}</div>
+      <div class="acc-chev open" id="chev-dash"><svg class="ic" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg></div>
     </div>
-    <div class="stat-card" style="cursor:pointer" onclick="openRevenueModal()">
-      <div style="min-width:0;flex:1">
-        <div class="s-label">Billable revenue</div>
-        <div class="s-value" style="font-size:${grev.total>=10000?'15px':'18px'}">${fmtMoney(grev.total)}</div>
-        ${base>0?`<div class="s-label" style="margin-top:10px">${payoutLabel}</div><div class="s-value" style="font-size:${(grev.total+base)>=10000?'15px':'18px'}">${fmtMoney(grev.total+base)}</div>`:''}
+    <div class="acc-body open" id="body-dash">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.5rem">
+        <div class="stat-card" style="cursor:pointer" onclick="openWeekModal()">
+          <div style="min-width:0;flex:1">
+            <div class="s-label">Total hours</div>
+            <div class="s-value" style="font-size:${grev.total>=10000?'15px':'18px'}">${th.toFixed(1)}</div>
+            <div class="s-label" style="margin-top:10px">This week (Mon–Fri)</div>
+            <div class="s-value" style="font-size:${grev.total>=10000?'15px':'18px'}">${wh.toFixed(1)}h</div>
+          </div>
+          <div class="stat-icon" style="background:#e3edf6;color:#1860a8">${ic.clock}</div>
+        </div>
+        <div class="stat-card" style="cursor:pointer" onclick="openRevenueModal()">
+          <div style="min-width:0;flex:1">
+            <div class="s-label">Billable revenue</div>
+            <div class="s-value" style="font-size:${grev.total>=10000?'15px':'18px'}">${fmtMoney(grev.total)}</div>
+            ${base>0?`<div class="s-label" style="margin-top:10px">${payoutLabel}</div><div class="s-value" style="font-size:${(grev.total+base)>=10000?'15px':'18px'}">${fmtMoney(grev.total+base)}</div>`:''}
+          </div>
+          <div class="stat-icon" style="background:#f0fdf4;color:#16a34a">${ic.dollar}</div>
+        </div>
       </div>
-      <div class="stat-icon" style="background:#f0fdf4;color:#16a34a">${ic.dollar}</div>
-    </div>
-  </div>
 
-  <div class="section-card">
-    <div class="section-header" style="margin-bottom:1rem">
-      <span style="font-weight:500">Monthly progress</span>
-      <span style="font-size:13px;color:var(--text-secondary)">${th.toFixed(1)} / ${goal} hours (${pct.toFixed(1)}%)</span>
+      <div class="section-card" style="margin-bottom:0">
+        <div class="section-header" style="margin-bottom:1rem">
+          <span style="font-weight:500">Monthly progress</span>
+          <span style="font-size:13px;color:var(--text-secondary)">${th.toFixed(1)} / ${goal} hours (${pct.toFixed(1)}%)</span>
+        </div>
+        <div class="progress-wrap"><div class="progress-bar" style="width:${pct}%;background:${pColor(pct)}"></div></div>
+        <div class="progress-labels"><span>0h</span><span>${goal}h target</span></div>
+      </div>
     </div>
-    <div class="progress-wrap"><div class="progress-bar" style="width:${pct}%;background:${pColor(pct)}"></div></div>
-    <div class="progress-labels"><span>0h</span><span>${goal}h target</span></div>
   </div>
 
   <div class="accordion">
@@ -706,6 +725,7 @@ function renderDetail(app){
       <span class="detail-month">&middot; ${MONTHS[S.month]} ${S.year}</span>
     </div>
     <div style="display:flex;gap:8px">
+      ${arch?'':`<button class="btn-secondary" onclick="exportCustomerHours('${c.id}')">${ic.excel} Export hours</button>`}
       ${arch?'':`<button class="btn-secondary" onclick="openEditCustomer('${c.id}')">${ic.edit} Edit</button>`}
     </div>
   </div>
@@ -980,9 +1000,9 @@ function showToast(msg){
 }
 
 function copyWeeklyComments(cid){
-  const {monday,friday}=getWeekRange();
+  const {monday}=getWeekRange();
   const days=[];
-  for(let i=0;i<5;i++){
+  for(let i=0;i<7;i++){
     const d=new Date(monday);d.setDate(monday.getDate()+i);
     days.push(`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`);
   }
@@ -1115,6 +1135,165 @@ function importData(){
   };
   input.click();
 }
+
+function safeFilePart(v){
+  return String(v||'export').replace(/[\\/:*?"<>|]/g,'-').replace(/\s+/g,' ').trim().slice(0,80)||'export';
+}
+function safeSheetName(v){
+  return safeFilePart(v).replace(/[\[\]\*\/\\\?\:]/g,' ').trim().slice(0,31)||'Export';
+}
+function excelCol(n){
+  let s='';n+=1;
+  while(n>0){const r=(n-1)%26;s=String.fromCharCode(65+r)+s;n=Math.floor((n-1)/26);}
+  return s;
+}
+function weekStartDate(dateStr){
+  const d=new Date(dateStr+'T00:00:00');
+  const day=d.getDay();
+  const diff=day===0?-6:1-day;
+  const ws=new Date(d);
+  ws.setDate(d.getDate()+diff);
+  ws.setHours(0,0,0,0);
+  return ws;
+}
+
+function exportCustomerHours(cid){
+  const c=findC(cid);if(!c)return;
+  const y=S.year,m=S.month;
+  const entries=getE(cid,y,m).slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  const monthName=MONTHS[m];
+
+  const hasWeekend=entries.some(e=>{
+    const d=new Date(e.date+'T00:00:00');
+    const day=d.getDay();
+    return day===0||day===6;
+  });
+
+  const dayDefs=[
+    {day:1,name:'Monday'},
+    {day:2,name:'Tuesday'},
+    {day:3,name:'Wednesday'},
+    {day:4,name:'Thursday'},
+    {day:5,name:'Friday'}
+  ];
+  if(hasWeekend){
+    dayDefs.push({day:6,name:'Saturday'},{day:0,name:'Sunday'});
+  }
+
+  const groups={};
+  entries.forEach(e=>{
+    if(!e.date)return;
+    const d=new Date(e.date+'T00:00:00');
+    if(isNaN(d.getTime()))return;
+    const ws=weekStartDate(e.date);
+    const key=`${ws.getFullYear()}-${p2(ws.getMonth()+1)}-${p2(ws.getDate())}`;
+    const day=d.getDay();
+    if(!groups[key]){
+      groups[key]={weekStart:ws,days:{}};
+    }
+    if(!groups[key].days[day]){
+      groups[key].days[day]={hours:0,comments:[]};
+    }
+    groups[key].days[day].hours+=pN(e.hours);
+    const desc=(e.desc||'').trim();
+    if(desc)groups[key].days[day].comments.push(desc);
+  });
+
+  const headers=[null,null,null,'Week Starting','Total Hours'];
+  dayDefs.forEach(d=>{
+    headers.push(`${d.name} Hours`,`${d.name} Comments`);
+  });
+
+  const aoa=[
+    [],
+    [null,c.name],
+    headers
+  ];
+  const headerRow=3;
+
+  const grandByDay={};
+  dayDefs.forEach(d=>grandByDay[d.day]=0);
+  let grandTotal=0;
+
+  Object.keys(groups).sort().forEach(key=>{
+    const g=groups[key];
+    let rowTotal=0;
+    const row=[null,null,null,g.weekStart,null];
+    dayDefs.forEach(d=>{
+      const info=g.days[d.day]||{hours:0,comments:[]};
+      const h=info.hours||0;
+      rowTotal+=h;
+      grandByDay[d.day]+=h;
+      row.push(h,info.comments.length?info.comments.join('; '):null);
+    });
+    row[4]=rowTotal;
+    grandTotal+=rowTotal;
+    aoa.push(row);
+  });
+
+  const totalRow=[null,'Total','Sum',null,grandTotal];
+  dayDefs.forEach(d=>{
+    totalRow.push(grandByDay[d.day]||0,null);
+  });
+  aoa.push(totalRow);
+
+  const customerTarget=pN(c.target);
+  const hasCustomerTarget=customerTarget>0;
+  const summaryStartRow=aoa.length+2;
+  aoa.push([]);
+  aoa.push([null,'Summary']);
+  aoa.push([null,'Total hours used',null,null,grandTotal]);
+  if(hasCustomerTarget){
+    aoa.push([null,'Monthly target',null,null,customerTarget]);
+    aoa.push([null,'Remaining hours',null,null,Math.max(0,customerTarget-grandTotal)]);
+  }else{
+    aoa.push([null,'Monthly target',null,null,'Not set']);
+    aoa.push([null,'Remaining hours',null,null,'—']);
+  }
+
+  const ws=XLSX.utils.aoa_to_sheet(aoa,{cellDates:true});
+  const lastCol=headers.length-1;
+  const lastRow=aoa.length;
+  const dataEndRow=summaryStartRow-2;
+  const lastColLetter=excelCol(lastCol);
+
+  ws['!cols']=[
+    {wch:4},
+    {wch:34},
+    {wch:10},
+    {wch:16},
+    {wch:12},
+    ...dayDefs.flatMap(d=>[{wch:14},{wch:34}])
+  ];
+  ws['!rows']=[
+    {},{hpt:18},{hpt:18}
+  ];
+
+  // Light formatting. SheetJS community builds may ignore styles, but the structure
+  // and widths still match the attached weekly template.
+  for(let col=0;col<=lastCol;col++){
+    const hcell=ws[`${excelCol(col)}${headerRow}`];
+    if(hcell)hcell.s={font:{bold:true},fill:{fgColor:{rgb:'EFEFEF'}}};
+    const tcell=ws[`${excelCol(col)}${dataEndRow}`];
+    if(tcell)tcell.s={font:{bold:true},fill:{fgColor:{rgb:'EAF4FB'}}};
+  }
+  if(ws['B2'])ws['B2'].s={font:{bold:true,sz:14}};
+  if(ws[`B${summaryStartRow+1}`])ws[`B${summaryStartRow+1}`].s={font:{bold:true}};
+
+  for(let r=headerRow+1;r<headerRow+1+Object.keys(groups).length;r++){
+    const dateCell=ws[`D${r}`];
+    if(dateCell)dateCell.z='mm/dd/yyyy';
+  }
+
+  ws['!autofilter']={ref:`B${headerRow}:${lastColLetter}${Math.max(headerRow,dataEndRow)}`};
+  ws['!freeze']={xSplit:0,ySplit:headerRow};
+
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,safeSheetName(c.name));
+  XLSX.writeFile(wb,`${safeFilePart(c.name)}-${monthName}-${y}-weekly-hours.xlsx`,{bookType:'xlsx',cellDates:true});
+  showToast('Excel exported in weekly template format');
+}
+
 
 load();
 S.year=new Date().getFullYear();
