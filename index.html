@@ -1169,23 +1169,12 @@ function exportCustomerHours(cid){
   const y=S.year,m=S.month;
   const entries=getE(cid,y,m).slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   const monthName=MONTHS[m];
+  const hourRate=rate(c);
+  const customerTarget=pN(c.target);
 
-  const hasWeekend=entries.some(e=>{
-    const d=new Date(e.date+'T00:00:00');
-    const day=d.getDay();
-    return day===0||day===6;
-  });
-
-  const dayDefs=[
-    {day:1,name:'Monday'},
-    {day:2,name:'Tuesday'},
-    {day:3,name:'Wednesday'},
-    {day:4,name:'Thursday'},
-    {day:5,name:'Friday'}
-  ];
-  if(hasWeekend){
-    dayDefs.push({day:6,name:'Saturday'},{day:0,name:'Sunday'});
-  }
+  const hasWeekend=entries.some(e=>{const d=new Date(e.date+'T00:00:00');const day=d.getDay();return day===0||day===6;});
+  const dayDefs=[{day:1,name:'Monday'},{day:2,name:'Tuesday'},{day:3,name:'Wednesday'},{day:4,name:'Thursday'},{day:5,name:'Friday'}];
+  if(hasWeekend){dayDefs.push({day:6,name:'Saturday'},{day:0,name:'Sunday'});}
 
   const groups={};
   entries.forEach(e=>{
@@ -1195,110 +1184,72 @@ function exportCustomerHours(cid){
     const ws=weekStartDate(e.date);
     const key=`${ws.getFullYear()}-${p2(ws.getMonth()+1)}-${p2(ws.getDate())}`;
     const day=d.getDay();
-    if(!groups[key]){
-      groups[key]={weekStart:ws,days:{}};
-    }
-    if(!groups[key].days[day]){
-      groups[key].days[day]={hours:0,comments:[]};
-    }
+    if(!groups[key])groups[key]={weekStart:ws,days:{}};
+    if(!groups[key].days[day])groups[key].days[day]={hours:0,comments:[]};
     groups[key].days[day].hours+=pN(e.hours);
     const desc=(e.desc||'').trim();
     if(desc)groups[key].days[day].comments.push(desc);
   });
 
-  const headers=[null,null,null,'Week Starting','Total Hours'];
-  dayDefs.forEach(d=>{
-    headers.push(`${d.name} Hours`,`${d.name} Comments`);
-  });
-
-  const aoa=[
-    [],
-    [null,c.name],
-    headers
-  ];
-  const headerRow=3;
-
-  const grandByDay={};
-  dayDefs.forEach(d=>grandByDay[d.day]=0);
-  let grandTotal=0;
-
+  const grandByDay={};dayDefs.forEach(d=>grandByDay[d.day]=0);let grandTotal=0;
+  const weekRows=[];
   Object.keys(groups).sort().forEach(key=>{
-    const g=groups[key];
-    let rowTotal=0;
-    const row=[null,null,null,g.weekStart,null];
-    dayDefs.forEach(d=>{
+    const g=groups[key];let rowTotal=0;
+    const days=dayDefs.map(d=>{
       const info=g.days[d.day]||{hours:0,comments:[]};
-      const h=info.hours||0;
-      rowTotal+=h;
-      grandByDay[d.day]+=h;
-      row.push(h,info.comments.length?info.comments.join('; '):null);
+      const h=info.hours||0;rowTotal+=h;grandByDay[d.day]+=h;
+      return {hours:h,comments:info.comments.join('; ')};
     });
-    row[4]=rowTotal;
-    grandTotal+=rowTotal;
-    aoa.push(row);
+    row4=rowTotal;grandTotal+=rowTotal;
+    const label=g.weekStart.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+    weekRows.push({label,days,total:rowTotal});
   });
 
-  const totalRow=[null,'Total','Sum',null,grandTotal];
-  dayDefs.forEach(d=>{
-    totalRow.push(grandByDay[d.day]||0,null);
-  });
-  aoa.push(totalRow);
+  // ── XLSX builder ─────────────────────────────────────────────────────────────
+  const remaining=customerTarget>0?Math.max(0,customerTarget-grandTotal):null;
 
-  const customerTarget=pN(c.target);
-  const hasCustomerTarget=customerTarget>0;
-  const summaryStartRow=aoa.length+2;
+  // Bold cell helper — SheetJS reads .s.font.bold when cellStyles:true
+  const bc=(v)=>({v,t:typeof v==='number'?'n':'s',s:{font:{bold:true}}});
+  const nc=(v)=>({v,t:typeof v==='number'?'n':'s'});
+  const fh=(h)=>h>0?h+'h':'—';
+
+  const aoa=[];
+  aoa.push([nc('Billable Hours Report')]);
+  aoa.push([bc(c.name)]);
+  aoa.push([nc('Generated '+new Date().toLocaleDateString('en-US',{month:'numeric',day:'numeric',year:'numeric'}))]);
   aoa.push([]);
-  aoa.push([null,'Summary']);
-  aoa.push([null,'Total hours used',null,null,grandTotal]);
-  if(hasCustomerTarget){
-    aoa.push([null,'Monthly target',null,null,customerTarget]);
-    aoa.push([null,'Remaining hours',null,null,Math.max(0,customerTarget-grandTotal)]);
-  }else{
-    aoa.push([null,'Monthly target',null,null,'Not set']);
-    aoa.push([null,'Remaining hours',null,null,'—']);
-  }
+  aoa.push([]);
 
-  const ws=XLSX.utils.aoa_to_sheet(aoa,{cellDates:true});
-  const lastCol=headers.length-1;
-  const lastRow=aoa.length;
-  const dataEndRow=summaryStartRow-2;
-  const lastColLetter=excelCol(lastCol);
+  // Weekly table header row
+  const hdrRow=[bc('Week Starting'),bc('Total')];
+  dayDefs.forEach(d=>{hdrRow.push(bc(d.name+' Hours'),bc(d.name+' Comments'));});
+  aoa.push(hdrRow);
 
-  ws['!cols']=[
-    {wch:4},
-    {wch:34},
-    {wch:10},
-    {wch:16},
-    {wch:12},
-    ...dayDefs.flatMap(d=>[{wch:14},{wch:34}])
-  ];
-  ws['!rows']=[
-    {},{hpt:18},{hpt:18}
-  ];
+  // Data rows
+  weekRows.forEach(wr=>{
+    const r=[nc(wr.label),nc(fh(wr.total))];
+    wr.days.forEach(d=>{r.push(nc(fh(d.hours)),nc(d.comments||''));});
+    aoa.push(r);
+  });
 
-  // Light formatting. SheetJS community builds may ignore styles, but the structure
-  // and widths still match the attached weekly template.
-  for(let col=0;col<=lastCol;col++){
-    const hcell=ws[`${excelCol(col)}${headerRow}`];
-    if(hcell)hcell.s={font:{bold:true},fill:{fgColor:{rgb:'EFEFEF'}}};
-    const tcell=ws[`${excelCol(col)}${dataEndRow}`];
-    if(tcell)tcell.s={font:{bold:true},fill:{fgColor:{rgb:'EAF4FB'}}};
-  }
-  if(ws['B2'])ws['B2'].s={font:{bold:true,sz:14}};
-  if(ws[`B${summaryStartRow+1}`])ws[`B${summaryStartRow+1}`].s={font:{bold:true}};
+  // TOTAL row
+  const totRow=[bc('TOTAL'),bc(fh(grandTotal))];
+  dayDefs.forEach(d=>{totRow.push(bc(fh(grandByDay[d.day])),nc(''));});
+  aoa.push(totRow);
 
-  for(let r=headerRow+1;r<headerRow+1+Object.keys(groups).length;r++){
-    const dateCell=ws[`D${r}`];
-    if(dateCell)dateCell.z='mm/dd/yyyy';
-  }
+  // Summary block
+  aoa.push([]);
+  aoa.push([bc('Summary')]);
+  aoa.push([bc('Used Hours'),bc('Total Hours'),bc('Remaining Hours')]);
+  aoa.push([nc(grandTotal),nc(customerTarget>0?customerTarget:'—'),nc(remaining!==null?remaining:'—')]);
 
-  ws['!autofilter']={ref:`B${headerRow}:${lastColLetter}${Math.max(headerRow,dataEndRow)}`};
-  ws['!freeze']={xSplit:0,ySplit:headerRow};
+  const ws=XLSX.utils.aoa_to_sheet(aoa,{skipHeader:true});
+  ws['!cols']=[{wch:18},{wch:10},...dayDefs.flatMap(()=>[{wch:16},{wch:30}])];
 
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,safeSheetName(c.name));
-  XLSX.writeFile(wb,`${safeFilePart(c.name)}-${monthName}-${y}-weekly-hours.xlsx`,{bookType:'xlsx',cellDates:true});
-  showToast('Excel exported in weekly template format');
+  XLSX.writeFile(wb,`${safeFilePart(c.name)}-${monthName}-${y}-hours.xlsx`,{bookType:'xlsx',cellStyles:true});
+  showToast('Excel exported');
 }
 
 
