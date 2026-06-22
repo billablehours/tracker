@@ -361,14 +361,19 @@ function buildIncomeData(){
 function renderIncomeChart(){
   const {monthData}=buildIncomeData();
   const maxTotal=Math.max(1,...monthData.map(m=>m.total));
+  const minTotal=monthData.length>0?Math.min(...monthData.filter(m=>m.total>0).map(m=>m.total)):0;
   const numMonths=monthData.length;
   const topPad=28;
   const chartH=220;
   const chartW=Math.max(360,numMonths*74);
   const step=maxTotal>200000?50000:maxTotal>20000?5000:maxTotal>2000?500:20;
   const niceMax=Math.ceil(maxTotal/step)*step||step;
+  // Set a smart minimum: floor to nearest step below minTotal, with some breathing room
+  const rawMin=minTotal>0?Math.floor((minTotal*0.97)/step)*step:0;
+  const niceMin=Math.max(0,rawMin);
+  const range=niceMax-niceMin||1;
   const xFor=i=>numMonths===1?chartW/2:(i/(numMonths-1))*chartW;
-  const yFor=v=>(chartH+topPad)-((v/niceMax)*chartH);
+  const yFor=v=>(chartH+topPad)-(((v-niceMin)/range)*chartH);
 
   const points=monthData.map((m,i)=>({x:xFor(i),y:yFor(m.total),m}));
   const linePoints=points.map(p=>`${p.x},${p.y}`).join(' ');
@@ -392,7 +397,7 @@ function renderIncomeChart(){
   let gridLines='';
   [0,0.25,0.5,0.75,1].forEach(frac=>{
     const y=(chartH+topPad)-(frac*chartH);
-    const val=Math.round(niceMax*frac);
+    const val=Math.round(niceMin+range*frac);
     gridLines+=`<line x1="0" y1="${y}" x2="${chartW}" y2="${y}" stroke="var(--border)" stroke-width="1"/>
       <text x="-8" y="${y+4}" text-anchor="end" font-size="10" fill="var(--text-hint)" font-family="'DM Sans',sans-serif">${val>=1000?(val/1000)+'k':val}</text>`;
   });
@@ -910,10 +915,12 @@ function liveCfg(){
 }
 function saveCfgWithFeedback(){
   liveCfg();
+  render();
+  // After render the old element is gone; grab the freshly rendered one
   const msg=document.getElementById('cfg-saved-msg');
   if(msg){
     msg.style.display='inline';
-    setTimeout(()=>{if(msg)msg.style.display='none';},2000);
+    setTimeout(()=>{const m=document.getElementById('cfg-saved-msg');if(m)m.style.display='none';},2000);
   }
 }
 function openRevenueModal(){S.modal={type:'revenue'};render();}
