@@ -857,8 +857,7 @@ function renderModal(app){
     let dayBtns='';
     for(let d=0;d<5;d++){
       const dd=new Date(wkMon);dd.setDate(wkMon.getDate()+d);
-      const ds=dd.toISOString().slice(0,10);
-      const isSelected=(entry.date||today())===ds;
+const ds=`${dd.getFullYear()}-${p2(dd.getMonth()+1)}-${p2(dd.getDate())}`;      const isSelected=(entry.date||today())===ds;
       dayBtns+=`<button type="button" class="quick-btn${isSelected?' active':''}" onclick="setEntryDate('${ds}')" style="flex:1;font-size:11px;padding:4px 0;min-width:0">${DAY_ABBR[d]}</button>`;
     }
     inner=`<div class="modal">
