@@ -176,8 +176,8 @@ textarea{resize:vertical;height:80px}
 .hero-sub{font-size:13px;color:var(--text-secondary);margin-top:4px;position:relative;z-index:1}
 /* Hero stat cards */
 .hero-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin-bottom:1.25rem}
-.hstat{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.25rem;box-shadow:0 1px 4px rgba(0,0,0,0.05);transition:box-shadow 0.15s}
-.hstat:hover{box-shadow:0 3px 10px rgba(0,0,0,0.09)}
+.hstat{background:transparent;border:none;border-radius:14px;padding:1.1rem 1.25rem;transition:background 0.15s}
+.hstat:hover{background:rgba(255,255,255,0.5)}
 .hstat-ibadge{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
 .hstat-label{font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:5px;font-weight:600}
 .hstat-value{font-size:22px;font-weight:700;color:var(--text);line-height:1.1}
@@ -202,7 +202,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:0.6
 /* dark */
 [data-theme="dark"] .top-nav{background:#1a232e;border-color:#2a3744}
 [data-theme="dark"] .hero-banner{background:linear-gradient(120deg,#1a2d4a 0%,#1e3358 100%)}
-[data-theme="dark"] .hstat{box-shadow:none}
+[data-theme="dark"] .hstat:hover{background:rgba(255,255,255,0.05)}
 [data-theme="dark"] .accordion{box-shadow:none}
 /* Reports */
 .report-filters{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:1.25rem;align-items:flex-end}
@@ -724,7 +724,7 @@ function renderDashboard(app){
 
   <div class="hero-banner" style="margin-top:1.25rem">
     <div class="hero-greeting">${greeting.main}</div>
-    <div class="hero-sub">${greeting.sub}</div>
+    <div class="hero-sub" style="${isBillingDay()?'font-weight:600;color:#d97706;font-size:14px;':''}">${greeting.sub}</div>
     <div class="hero-banner-art">
       <svg viewBox="0 0 300 130" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
         <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c7d9f8" stop-opacity=".5"/><stop offset="100%" stop-color="#dce8ff" stop-opacity="0"/></linearGradient></defs>
@@ -740,8 +740,6 @@ function renderDashboard(app){
       </svg>
     </div>
   </div>
-  ${renderHeroStats()}
-
   <div class="accordion">
     <div class="acc-hdr" onclick="toggleAcc('dash')">
       <div class="acc-hdr-left">
@@ -811,12 +809,12 @@ function renderDashboard(app){
             <div class="acc-sub">${S.analyticsYear<new Date().getFullYear()?S.analyticsYear+' — full year':'Year to date '+S.analyticsYear}</div>
           </div>
         </div>
-        <div style="display:flex;align-items:center;gap:6px;margin-right:8px;" onclick="event.stopPropagation()">
+        
+        <div style="display:flex;align-items:center;gap:6px;margin-left:auto"><div style="display:flex;align-items:center;gap:4px;" onclick="event.stopPropagation()">
           <button class="btn-ghost" style="padding:2px 7px;font-size:18px;line-height:1;" onclick="changeAnalyticsYear(-1)">&lsaquo;</button>
           <span style="font-size:13px;font-weight:600;min-width:36px;text-align:center;">${S.analyticsYear}</span>
           <button class="btn-ghost" style="padding:2px 7px;font-size:18px;line-height:1;${S.analyticsYear>=new Date().getFullYear()?'opacity:.3;pointer-events:none;':''}" onclick="changeAnalyticsYear(1)">&rsaquo;</button>
-        </div>
-        <div class="acc-chev" id="chev-an"><svg class="ic" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg></div>
+        </div><div class="acc-chev" id="chev-an"><svg class="ic" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg></div></div>
       </div>
       <div class="acc-body ${S.accOpen.an?"open":""}" id="body-an">
         <p class="sec-label">Export billable hours</p>
@@ -914,7 +912,6 @@ function renderDashboard(app){
       </div>
     </div>
   </div>
-  <div class="page-tip"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><strong>Tip:</strong> Keep your hours up to date for the most accurate forecasts.</div>
 </div>`;
 }
 
@@ -1001,13 +998,13 @@ function renderDetail(app){
       ${arch?'':`<button class="btn-secondary" onclick="openEditCustomer('${c.id}')">${ic.edit} Edit</button>`}
     </div>
   </div>
-  ${renderTimerBar(c.id,arch)}
   <div class="stats-grid" style="margin-bottom:1.5rem">
     <div class="stat-card" onclick="S.modal={type:'custweek',cid:'${c.id}'};render()" style="cursor:pointer" title="Click to see daily breakdown"><div><div class="s-label">Hours this month</div><div class="s-value">${h.toFixed(1)}</div><div class="s-label" style="margin-top:10px">This week</div><div class="s-value">${weekHoursForCustomer(c.id).toFixed(1)}h</div></div><div class="stat-icon" style="background:#e3edf6;color:#1860a8">${ic.clock}</div></div>
     <div class="stat-card"><div><div class="s-label">Revenue this month</div><div class="s-value" style="font-size:15px">${fmtMoney(rev)}</div></div><div class="stat-icon" style="background:#f0fdf4;color:#16a34a">${ic.dollar}</div></div>
     <div class="stat-card"><div><div class="s-label">Hourly rate</div><div class="s-value" style="font-size:15px">${fmtMoney(r)}/hr</div></div><div class="stat-icon" style="background:#e3edf6;color:#1860a8">${ic.dollar}</div></div>
   </div>
   ${tBar}
+  ${renderTimerBar(c.id,arch)}
   <div class="section-card">
     <div class="section-header">
       <h2>Time entries</h2>
@@ -2409,6 +2406,24 @@ function renderPTOSection(){
 function setNavTab(tab){S.navTab=tab;render();}
 function goToToday(){const n=new Date();S.year=n.getFullYear();S.month=n.getMonth();render();}
 
+function isBillingDay(){
+  const now=new Date();
+  const dow=now.getDay();
+  if(dow===5) return true;
+  const lastDay=new Date(now.getFullYear(),now.getMonth()+1,0);
+  let ld=new Date(lastDay);
+  while(ld.getDay()===0||ld.getDay()===6) ld.setDate(ld.getDate()-1);
+  return now.getDate()===ld.getDate()&&now.getMonth()===ld.getMonth();
+}
+function isLynxDay(){
+  const now=new Date();
+  const y=now.getFullYear(),m=now.getMonth();
+  // Find the 3rd of this month; if weekend, roll to following Monday
+  let d=new Date(y,m,3);
+  if(d.getDay()===6) d.setDate(5); // Sat -> Mon
+  if(d.getDay()===0) d.setDate(4); // Sun -> Mon
+  return now.getDate()===d.getDate()&&now.getMonth()===d.getMonth();
+}
 function getGreeting(){
   const h=new Date().getHours();
   const name=S.cfg.userName?', '+S.cfg.userName:'';
@@ -2416,6 +2431,8 @@ function getGreeting(){
   if(h<12){main='Good morning'+name+'! \u2600';sub='Here\'s your overview for '+MONTHS[S.month]+' '+S.year+'.';}
   else if(h<18){main='Good afternoon'+name+'! \uD83D\uDC4B';sub='Here\'s your overview for '+MONTHS[S.month]+' '+S.year+'.';}
   else{main='Good evening'+name+'! \uD83C\uDF19';sub='Here\'s your overview for '+MONTHS[S.month]+' '+S.year+'.';}
+  if(isBillingDay()){sub='&#x1F4B8; Today is Billing Day! Don\'t forget to log your hours!';}
+  if(isLynxDay()){sub='&#x1F4CB; Don\'t forget to fill the status reports for your customers in Lynx!';}
   return {main,sub};
 }
 
@@ -2507,27 +2524,6 @@ function renderReportsView(){
     +'</div>';
 }
 
-function exportReport(){
-  if(!S._reportFilters)S._reportFilters={cid:'',fromMonth:'',toMonth:''};
-  const rf=S._reportFilters;
-  const allC=[...S.active,...S.archived];
-  const rows=[];
-  allC.forEach(c=>{
-    if(rf.cid&&rf.cid!==c.id)return;
-    Object.keys(S.entries).forEach(k=>{
-      const parts=k.split('::'),kcid=parts[0],kmonth=parts[1];
-      if(kcid!==c.id)return;
-      if(rf.fromMonth&&kmonth<rf.fromMonth)return;
-      if(rf.toMonth&&kmonth>rf.toMonth)return;
-      (S.entries[k]||[]).forEach(e=>{rows.push([e.date,c.name,e.hours.toFixed(2),fmtMoney(e.hours*rate(c)),e.desc||'']);});
-    });
-  });
-  rows.sort((a,b)=>a[0].localeCompare(b[0]));
-  const csv=[['Date','Customer','Hours','Revenue','Description'],...rows].map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
-  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
-  a.download='billable-hours-report.csv';a.click();
-}
-
 function renderExportPanel(){
   if(!S._xf)S._xf={cids:[],from:'',to:'',drop:false,calOpen:'',calYear:new Date().getFullYear(),calMonth:new Date().getMonth()};
   const xf=S._xf;
@@ -2578,7 +2574,7 @@ function renderExportPanel(){
     +'</div>'
     +(xf.calOpen==='xf-until'?xfRenderCal('xf-until'):'')
     +'</div></div>'
-    +'<div style="flex:0 0 auto"><button class="btn-primary" onclick="exportXls()">'+xlsIc+'Export XLS</button></div>'
+    +'<div style="flex:0 0 auto"><button class="btn-primary" onclick="exportXls()">'+xlsIc+'Export Hours</button></div>'
     +'</div>';
 }
 function xfToggleDrop(){
@@ -2596,7 +2592,7 @@ function xfToggleCust(id){
 function xfClearCusts(){if(S._xf){S._xf.cids=[];S._xf.drop=false;}render();}
 
 function exportXls(){
-  if(!S._xf)S._xf={cids:[],from:'',to:''};
+  if(!S._xf)S._xf={cids:[],from:'',to:'',drop:false,calOpen:'',calYear:new Date().getFullYear(),calMonth:new Date().getMonth()};
   const xf=S._xf;
   if(!Array.isArray(xf.cids))xf.cids=[];
   const allC=[...S.active,...S.archived];
@@ -2615,22 +2611,24 @@ function exportXls(){
   });
   dataRows.sort((a,b)=>a[0].localeCompare(b[0]));
   if(dataRows.length===0){alert('No entries match the selected filters.');return;}
-  // Build XLS as XML SpreadsheetML — works in all browsers, no library needed
-  const esc=v=>String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  const numCell=v=>'<Cell><Data ss:Type="Number">'+v+'</Data></Cell>';
-  const strCell=v=>'<Cell><Data ss:Type="String">'+esc(v)+'</Data></Cell>';
-  const hdr=['Date','Customer','Hours','Description'];
-  const hdrRow='<Row>'+hdr.map(h=>'<Cell><Data ss:Type="String">'+h+'</Data></Cell>').join('')+'</Row>';
-  const rows=dataRows.map(r=>'<Row>'+strCell(r[0])+strCell(r[1])+numCell(r[2])+strCell(r[3])+'</Row>').join('');
-  const xml='<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?>'
-    +'<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'
-    +'<Worksheet ss:Name="Billable Hours"><Table>'+hdrRow+rows+'</Table></Worksheet></Workbook>';
-  const blob=new Blob([xml],{type:'application/vnd.ms-excel;charset=utf-8'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='billable-hours-report.xls';
-  document.body.appendChild(a);a.click();document.body.removeChild(a);
-  URL.revokeObjectURL(a.href);
+  const totHours=dataRows.reduce((s,r)=>s+r[2],0);
+  const safeStr=v=>v==null?'':String(v);
+  const safeNum=v=>{const n=parseFloat(v);return isNaN(n)?0:n;};
+  const aoa=[
+    ['Date','Customer','Hours','Description'],
+    ...dataRows.map(r=>[safeStr(r[0]),safeStr(r[1]),safeNum(r[2]),safeStr(r[3])]),
+    [],
+    ['TOTAL','',safeNum(totHours),'']
+  ];
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols']=[{wch:14},{wch:24},{wch:8},{wch:44}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'BillableHours');
+  const from=xf.from?xf.from.slice(0,7):'';
+  const to=xf.to?xf.to.slice(0,7):'';
+  const suffix=from&&to?'-'+from+'-to-'+to:from?'-from-'+from:to?'-to-'+to:'';
+  XLSX.writeFile(wb,'billable-hours'+suffix+'.xlsx',{bookType:'xlsx'});
+  showToast('Hours exported');
 }
 
 function xfFmtDate(str){
