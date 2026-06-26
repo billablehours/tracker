@@ -59,7 +59,7 @@ textarea{resize:vertical;height:80px}
 .btn-ghost{background:none;border:none;color:var(--text-secondary);padding:4px;display:inline-flex;align-items:center;border-radius:6px}
 .btn-ghost:hover{color:var(--text);background:var(--bg)}
 .customers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
-.customer-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;cursor:pointer;transition:border-color 0.15s;position:relative}
+.customer-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;cursor:pointer;transition:border-color:0.15s;position:relative}
 .customer-card:hover{border-color:var(--blue)}
 .customer-card.archived-card{opacity:0.7;border-style:dashed}
 .card-x{position:absolute;top:10px;right:10px;width:20px;height:20px;border-radius:50%;background:none;border:none;color:var(--text-hint);font-size:16px;display:none;align-items:center;justify-content:center;line-height:1;padding:0;cursor:pointer}
@@ -1099,6 +1099,7 @@ function renderModal(app){
         <div style="margin-top:6px">${weekRows}</div>
       </div>
       <div class="modal-actions">
+        <button class="btn-cancel-m" onclick="copyWeeklyComments('${c.id}')">${ic.clipboard} Copy comments</button>
         <button class="btn-ok-m" onclick="closeModal()">Close</button>
       </div>
     </div>`;
