@@ -9,7 +9,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 
 :root,[data-theme="light"]{
-  --bg:#f4f6f8;--surface:#fff;--border:#dde3e9;--border2:#c3ccd6;
+  --bg:#f0f2f5;--surface:#fff;--border:#dde3e9;--border2:#c3ccd6;
   --text:#1a2530;--text-secondary:#5c6b7a;--text-hint:#94a3b3;
   --blue:#1860a8;--blue-dark:#0f4a87;
   --green:#16a34a;--red:#dc2626;--amber:#d97706;--purple:#1860a8;
@@ -29,7 +29,7 @@ button{font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer}
 input,textarea,select{font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;width:100%;outline:none;transition:border-color 0.15s}
 input:focus,textarea:focus,select:focus{border-color:var(--blue)}
 textarea{resize:vertical;height:80px}
-.page{max-width:860px;margin:0 auto;padding:4px 1.5rem}
+.page{max-width:900px;margin:0 auto;padding:4px 1.5rem 2rem}
 .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-top:6px;flex-wrap:wrap;gap:12px}
 .header h1{font-size:24px;font-weight:500}
 .header p{font-size:14px;color:var(--text-secondary);margin-top:3px}
@@ -159,6 +159,60 @@ textarea{resize:vertical;height:80px}
 .logo-upload-wrap{display:flex;align-items:center;gap:12px;margin-bottom:1rem}
 .logo-preview{width:56px;height:56px;border-radius:8px;object-fit:contain;border:1px solid var(--border);background:var(--bg)}
 .logo-preview-placeholder{width:56px;height:56px;border-radius:8px;border:1px dashed var(--border);background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--text-hint);font-size:11px;text-align:center;line-height:1.4;padding:4px}
+
+/* Top Navbar */
+.top-nav{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #eaecf0;display:flex;align-items:center;padding:0 2rem;height:56px;gap:0}
+.nav-logo{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;color:#1a2530;white-space:nowrap}
+.nav-logo-icon{width:28px;height:28px;background:linear-gradient(135deg,#4f8ef7,#1860a8);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.nav-tabs{display:flex;align-items:center;justify-content:center;flex:1}
+.nav-tab{background:none;border:none;padding:7px 18px;border-radius:99px;font-size:14px;font-weight:500;color:#5c6b7a;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:6px}
+.nav-tab:hover{background:#f4f6f8;color:#1a2530}
+.nav-tab.active{background:#eef3ff;color:#1860a8;font-weight:600}
+.nav-right{display:flex;align-items:center;gap:10px;margin-left:auto}
+/* Hero banner */
+.hero-banner{background:linear-gradient(120deg,#dce8ff 0%,#e8f0fb 60%,#eef3ff 100%);border:none;border-radius:16px;padding:1.75rem 2rem;margin-bottom:1.25rem;position:relative;overflow:hidden;min-height:100px}
+.hero-banner-art{position:absolute;right:0;top:0;bottom:0;width:38%;pointer-events:none;overflow:hidden}
+.hero-greeting{font-size:22px;font-weight:700;color:#1a2530;line-height:1.2;position:relative;z-index:1}
+.hero-sub{font-size:13px;color:#5c6b7a;margin-top:4px;position:relative;z-index:1}
+/* Hero stat cards */
+.hero-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin-bottom:1.25rem}
+.hstat{background:#fff;border:1px solid #eaecf0;border-radius:14px;padding:1.1rem 1.25rem;box-shadow:0 1px 4px rgba(0,0,0,0.05);transition:box-shadow 0.15s}
+.hstat:hover{box-shadow:0 3px 10px rgba(0,0,0,0.09)}
+.hstat-ibadge{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+.hstat-label{font-size:10px;color:#94a3b3;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:5px;font-weight:600}
+.hstat-value{font-size:22px;font-weight:700;color:#1a2530;line-height:1.1}
+.hstat-sub{font-size:11px;color:#94a3b3;margin-top:5px}
+.hstat-bar{height:5px;border-radius:99px;background:#f0f2f5;margin-top:10px;overflow:hidden}
+.hstat-bar-fill{height:5px;border-radius:99px;transition:width 0.4s}
+.hstat-yes{font-size:22px;font-weight:700}
+/* Accordion redesign */
+.accordion{background:#fff;border:1px solid #eaecf0;border-radius:14px;margin-bottom:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.acc-hdr{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;cursor:pointer;user-select:none;transition:background 0.15s}
+.acc-hdr:hover{background:#fafbfc}
+.acc-hdr-left{display:flex;align-items:center;gap:12px}
+.acc-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:none}
+.acc-title{font-weight:600;font-size:15px;color:#1a2530}
+.acc-sub{font-size:12px;color:#94a3b3;margin-top:1px}
+.acc-chev{color:#c3ccd6;transition:transform 0.2s;display:flex;align-items:center}
+.acc-chev.open{transform:rotate(180deg)}
+/* tip */
+.page-tip{text-align:center;padding:1.5rem 0 2rem;font-size:12px;color:#b0bbc8}
+/* dark */
+[data-theme="dark"] .top-nav{background:#1a232e;border-color:#2a3744}
+[data-theme="dark"] .hstat{background:#1a232e;border-color:#2a3744;box-shadow:none}
+[data-theme="dark"] .hero-banner{background:linear-gradient(120deg,#1a2d4a 0%,#1e3358 100%)}
+[data-theme="dark"] .accordion{background:#1a232e;border-color:#2a3744;box-shadow:none}
+/* Reports */
+.report-filters{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:1.25rem;align-items:flex-end}
+.report-filters .field{margin:0;min-width:140px;flex:1}
+.report-table{width:100%;border-collapse:collapse;font-size:13px}
+.report-table th{text-align:left;padding:8px 10px;font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.04em;border-bottom:2px solid var(--border);white-space:nowrap}
+.report-table td{padding:9px 10px;border-bottom:1px solid var(--border);color:var(--text)}
+.report-table tr:last-child td{border-bottom:none}
+.report-table tr:hover td{background:var(--bg)}
+.report-total td{font-weight:600;background:var(--bg)!important}
+#xf-drop{display:none}#xf-drop.open{display:block}
+
 svg.ic{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vertical-align:-2px;flex-shrink:0}
 
 /* PTO Readiness styles */
@@ -187,6 +241,9 @@ svg.ic{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;str
 .backup-extra-row input{flex:1}
 .btn-rm-backup{background:none;border:none;color:var(--text-hint);cursor:pointer;font-size:18px;line-height:1;padding:2px 4px;border-radius:4px}
 .btn-rm-backup:hover{color:var(--red)}
+.btn-save-row{background:none;border:1px solid var(--green);color:var(--green);border-radius:6px;padding:3px 9px;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;transition:background 0.15s,color 0.15s}
+.btn-save-row:hover{background:var(--green);color:#fff}
+.btn-save-row.saved{background:var(--green);color:#fff;border-color:var(--green)}
 .manager-email-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;font-size:13px;color:var(--text);white-space:pre-wrap;font-family:'DM Sans',sans-serif;line-height:1.6;margin-top:8px}
 .btn-copy-manager{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:7px 14px;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin-top:8px}
 .btn-copy-manager:hover{background:var(--bg)}
@@ -296,7 +353,8 @@ let S={
   selectedId:null,modal:null,mh:0.5,dark:false,
   active:[],archived:[],entries:{},
   timers:{},_timerComment:'',_forgottenTimer:null,
-  cfg:{defaultRate:0,currency:'HUF',baseSalary:0,monthlyGoal:125},
+  cfg:{defaultRate:0,currency:'HUF',baseSalary:0,monthlyGoal:125,userName:'',daysOff:0},
+  navTab:'home',
   rateHistory:[],   
   salaryHistory:[], 
   pto:{
@@ -640,25 +698,52 @@ function renderDashboard(app){
   if(payoutMonthIdx>11){payoutMonthIdx-=12;payoutYear++;}
   const payoutLabel=`Paid in ${MONTHS[payoutMonthIdx]}`;
 
+  const tab=S.navTab||'home';
+  const greeting=getGreeting();
   app.innerHTML=`
-<div class="page">
-  <div class="header">
-    <div>
-    </div>
-    <div class="header-right">
-      <button class="theme-btn" onclick="toggleTheme()" title="Toggle dark mode">${S.dark?ic.sun:ic.moon}</button>
-      <div class="month-nav">
-        <button onclick="prevMonth()">&#8249;</button>
-        <span>${MONTHS[S.month]} ${S.year}</span>
-        <button onclick="nextMonth()">&#8250;</button>
-      </div>
+<nav class="top-nav">
+  <div class="nav-logo">
+    <div class="nav-logo-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+    BH &amp; PTO Tracker
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Home</button>
+  </div>
+  <div class="nav-right">
+    <button class="theme-btn" onclick="toggleTheme()" title="Toggle dark mode">${S.dark?ic.sun:ic.moon}</button>
+    <div class="month-nav">
+      <button onclick="prevMonth()">&#8249;</button>
+      <span>${MONTHS[S.month]} ${S.year}</span>
+      <button onclick="nextMonth()">&#8250;</button>
     </div>
   </div>
+</nav>
+<div class="page">
+
+  <div class="hero-banner" style="margin-top:1.25rem">
+    <div class="hero-greeting">${greeting.main}</div>
+    <div class="hero-sub">${greeting.sub}</div>
+    <div class="hero-banner-art">
+      <svg viewBox="0 0 300 130" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+        <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c7d9f8" stop-opacity=".5"/><stop offset="100%" stop-color="#dce8ff" stop-opacity="0"/></linearGradient></defs>
+        <rect width="300" height="130" fill="url(#sky)"/>
+        <circle cx="230" cy="28" r="16" fill="#ffe082" opacity=".85"/>
+        <ellipse cx="180" cy="38" rx="40" ry="14" fill="#fff" opacity=".55"/>
+        <ellipse cx="230" cy="45" rx="28" ry="10" fill="#fff" opacity=".45"/>
+        <ellipse cx="150" cy="100" rx="90" ry="38" fill="#6aaf6a" opacity=".38"/>
+        <ellipse cx="265" cy="110" rx="55" ry="28" fill="#558b55" opacity=".32"/>
+        <ellipse cx="80" cy="115" rx="70" ry="30" fill="#4a7c4a" opacity=".25"/>
+        <ellipse cx="200" cy="72" rx="35" ry="50" fill="#8fa8c8" opacity=".22"/>
+        <ellipse cx="240" cy="80" rx="22" ry="38" fill="#7090b8" opacity=".18"/>
+      </svg>
+    </div>
+  </div>
+  ${renderHeroStats()}
 
   <div class="accordion">
     <div class="acc-hdr" onclick="toggleAcc('dash')">
       <div class="acc-hdr-left">
-        <div class="acc-icon">${ic.clock}</div>
+        <div class="acc-icon" style="background:#eff6ff;border:none;color:#1860a8">${ic.clock}</div>
         <div><div class="acc-title">Dashboard</div><div class="acc-sub">${MONTHS[S.month]} ${S.year} overview</div></div>
       </div>
       <div class="acc-chev open" id="chev-dash"><svg class="ic" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg></div>
@@ -718,7 +803,7 @@ function renderDashboard(app){
     <div class="accordion">
       <div class="acc-hdr" onclick="toggleAcc('an')">
         <div class="acc-hdr-left">
-          <div class="acc-icon"><svg class="ic" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+          <div class="acc-icon" style="background:#faf5ff;border:none;color:#9333ea"><svg class="ic" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
           <div>
             <div class="acc-title">Analytics</div>
             <div class="acc-sub">${S.analyticsYear<new Date().getFullYear()?S.analyticsYear+' — full year':'Year to date '+S.analyticsYear}</div>
@@ -737,6 +822,9 @@ function renderDashboard(app){
         <div class="divider"></div>
         <p class="sec-label">Income received per month</p>
         ${renderIncomeChart()}
+        <div class="divider"></div>
+        <p class="sec-label">Export billable hours</p>
+        ${renderExportPanel()}
       </div>
     </div>
   </div>
@@ -745,7 +833,7 @@ function renderDashboard(app){
     <div class="accordion">
       <div class="acc-hdr" onclick="toggleAcc('pto')">
         <div class="acc-hdr-left">
-          <div class="acc-icon"><svg class="ic" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></div>
+          <div class="acc-icon" style="background:#fff7ed;border:none;color:#d97706"><svg class="ic" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></div>
           <div><div class="acc-title">PTO Readiness</div><div class="acc-sub">Holiday checklist &amp; customer handovers</div></div>
         </div>
         <div class="acc-chev" id="chev-pto"><svg class="ic" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg></div>
@@ -760,12 +848,18 @@ function renderDashboard(app){
     <div class="accordion">
       <div class="acc-hdr" onclick="toggleAcc('gs')">
         <div class="acc-hdr-left">
-          <div class="acc-icon">${ic.gear}</div>
+          <div class="acc-icon" style="background:#f0f9ff;border:none;color:#0891b2">${ic.gear}</div>
           <div><div class="acc-title">General settings</div><div class="acc-sub">Rate, currency, salary, goal &amp; data backup</div></div>
         </div>
         <div class="acc-chev" id="chev-gs"><svg class="ic" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg></div>
       </div>
       <div class="acc-body ${S.accOpen.gs?"open":""}" id="body-gs">
+        <p class="sec-label">Profile</p>
+        <div class="field" style="max-width:260px;margin-bottom:1rem">
+          <label>Your name</label>
+          <input id="s-name" type="text" value="${S.cfg.userName||''}" placeholder="e.g. Nick" oninput="liveCfg()">
+          <div class="field-hint">Used in the greeting banner</div>
+        </div>
         <p class="sec-label">Billing</p>
         <div class="settings-grid">
           <div class="field">
@@ -818,6 +912,7 @@ function renderDashboard(app){
       </div>
     </div>
   </div>
+  <div class="page-tip"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><strong>Tip:</strong> Keep your hours up to date for the most accurate forecasts.</div>
 </div>`;
 }
 
@@ -935,12 +1030,12 @@ function renderModal(app){
     }
     const contactRows=S._modalContacts.map((v,i)=>`
       <div class="contact-row" style="margin-bottom:6px">
-        <input type="text" placeholder="contact@customer.com" value="${v||''}" oninput="S._modalContacts[${i}]=this.value">
+        <input id="mcont-${i}" type="text" placeholder="contact@customer.com" value="${v||''}" oninput="S._modalContacts[${i}]=this.value">
         ${S._modalContacts.length>1?`<button class="btn-rm-backup" onclick="S._modalContacts.splice(${i},1);S.modal._init=true;render()">&#x2715;</button>`:''}
       </div>`).join('');
     const backupRows=S._modalBackups.map((v,i)=>`
       <div class="contact-row" style="margin-bottom:6px">
-        <input type="text" placeholder="Back up ${i+1} name" value="${v||''}" oninput="S._modalBackups[${i}]=this.value">
+        <input id="mbup-${i}" type="text" placeholder="Back up ${i+1} name" value="${v||''}" oninput="S._modalBackups[${i}]=this.value">
         ${S._modalBackups.length>1?`<button class="btn-rm-backup" onclick="S._modalBackups.splice(${i},1);S.modal._init=true;render()">&#x2715;</button>`:''}
       </div>`).join('');
     inner=`<div class="modal">
@@ -1192,6 +1287,8 @@ function liveCfg(){
   S.cfg.currency=document.getElementById('s-cur').value;
   S.cfg.baseSalary=pN(document.getElementById('s-sal').value);
   S.cfg.monthlyGoal=pN(document.getElementById('s-goal').value)||125;
+  const nu=document.getElementById('s-name');if(nu)S.cfg.userName=nu.value.trim();
+  const du=document.getElementById('s-daysoff');if(du)S.cfg.daysOff=pN(du.value)||0;
   saveCfg();
 }
 function saveRateHistory(){
@@ -1980,6 +2077,9 @@ function ptoSetContact(cid,i,v){ptoGetCust(cid).contacts[i]=v;savePTO();}
 function ptoAddBackup(cid){const cd=ptoGetCust(cid);cd.backups.push('');savePTO();render();}
 function ptoRemoveBackup(cid,i){const cd=ptoGetCust(cid);cd.backups.splice(i,1);savePTO();render();}
 function ptoSetBackup(cid,i,v){ptoGetCust(cid).backups[i]=v;savePTO();}
+function ptoSaveRow(btnId,saveFn){saveFn();const btn=document.getElementById(btnId);if(btn){btn.textContent='Saved ✓';btn.classList.add('saved');setTimeout(()=>{btn.textContent='Save';btn.classList.remove('saved');},1600);}}
+function modalSaveContact(i,inputId,btnId){const inp=document.getElementById(inputId);if(inp)S._modalContacts[i]=inp.value;const btn=document.getElementById(btnId);if(btn){btn.textContent='Saved ✓';btn.classList.add('saved');setTimeout(()=>{btn.textContent='Save';btn.classList.remove('saved');},1600);}}
+function modalSaveBackup(i,inputId,btnId){const inp=document.getElementById(inputId);if(inp)S._modalBackups[i]=inp.value;const btn=document.getElementById(btnId);if(btn){btn.textContent='Saved ✓';btn.classList.add('saved');setTimeout(()=>{btn.textContent='Save';btn.classList.remove('saved');},1600);}}
 
 function ptoOpenDetail(cid){ptoInst().ptoView=cid;savePTO();render();}
 function ptoGoBack(){ptoInst().ptoView='grid';savePTO();render();}
@@ -2035,16 +2135,14 @@ function buildCustomerEmail(cid){
   const cd=ptoGetCust(cid);
   const from=fmtPTODate(inst.dateFrom)||'[start date]';
   const until=fmtPTODate(inst.dateUntil)||'[end date]';
-  const primaryEmail=(cd.contacts||[]).find(e=>e&&e.trim())||'';
-  let firstName='[Customer Name]';
-  const emailMatch=primaryEmail.match(/([a-zA-Z]+)[@\s]/);
-  if(emailMatch){firstName=emailMatch[1].charAt(0).toUpperCase()+emailMatch[1].slice(1).toLowerCase();}
-  else if(primaryEmail.trim()){const w=primaryEmail.trim().split(/\s+/)[0];firstName=w.charAt(0).toUpperCase()+w.slice(1).toLowerCase();}
+  const allContacts=(cd.contacts||[]).filter(e=>e&&e.trim());
+  function extractFirstName(email){const m=email.match(/^([a-zA-Z]+)[.@]/);if(m)return m[1].charAt(0).toUpperCase()+m[1].slice(1).toLowerCase();const w=email.trim().split(/\s+/)[0];return w.charAt(0).toUpperCase()+w.slice(1).toLowerCase();}
+  const contactNames=allContacts.length?allContacts.map(extractFirstName):['[Customer Name]'];
+  const greeting=contactNames.length>1?contactNames.slice(0,-1).join(', ')+' & '+contactNames[contactNames.length-1]:contactNames[0];
   const bups=(cd.backups||[]).filter(b=>b&&b.trim());
   const primaryBackup=bups[0]||'[backup name]';
-  const allContacts=(cd.contacts||[]).filter(e=>e&&e.trim());
   const allBackups=bups;
-  let body=`Subject: Out of Office – ${c.name} – Support Coverage\n\nDear ${firstName},\n\nI will be out of office from ${from} through ${until}.\n\nDuring this period your primary contact will be:\n\n${primaryBackup}`;
+  let body=`Subject: Out of Office – ${c.name} – Support Coverage\n\nDear ${greeting},\n\nI will be out of office from ${from} through ${until}.\n\nDuring this period your primary contact will be:\n\n${primaryBackup}`;
   if(allBackups.length>1) body+=`\n\nAdditional back ups: ${allBackups.slice(1).join(', ')}`;
   body+=`\n\nPlease contact ${primaryBackup} for any urgent requests.\n\nThank you.`;
   return body;
@@ -2141,12 +2239,12 @@ function renderPTOCustomerDetail(c){
 
   const contactRows=contacts.map((email,i)=>`
     <div class="contact-row">
-      <input type="text" placeholder="contact@customer.com" value="${email||''}" oninput="ptoSetContact('${c.id}',${i},this.value)">
+      <input id="pto-cont-${c.id}-${i}" type="text" placeholder="contact@customer.com" value="${email||''}" oninput="ptoSetContact('${c.id}',${i},this.value)">
       <button class="btn-rm-backup" onclick="ptoRemoveContact('${c.id}',${i})">&#x2715;</button>
     </div>`).join('');
   const backupRows=backups.map((b,i)=>`
     <div class="contact-row">
-      <input type="text" placeholder="Back up ${i+1} name" value="${b||''}" oninput="ptoSetBackup('${c.id}',${i},this.value)">
+      <input id="pto-bup-${c.id}-${i}" type="text" placeholder="Back up ${i+1} name" value="${b||''}" oninput="ptoSetBackup('${c.id}',${i},this.value)">
       <button class="btn-rm-backup" onclick="ptoRemoveBackup('${c.id}',${i})">&#x2715;</button>
     </div>`).join('');
   const emailPreview=buildCustomerEmail(c.id);
@@ -2169,7 +2267,10 @@ function renderPTOCustomerDetail(c){
       </div>
       <div class="coll-body ${stateContacts}" id="coll-contacts-${c.id}">
         <div class="contacts-list">${contactRows||'<div style="font-size:13px;color:var(--text-hint);padding:4px 0">No contacts added yet.</div>'}</div>
-        <button class="btn-add-contact" onclick="ptoAddContact('${c.id}')">+ Add customer contact</button>
+        <div style="display:flex;gap:8px;margin-top:4px">
+          <button class="btn-add-contact" style="flex:1;margin-top:0" onclick="ptoAddContact('${c.id}')">+ Add customer contact</button>
+          <button class="btn-save-row" id="pto-cont-save-${c.id}" onclick="ptoSaveRow('pto-cont-save-${c.id}',()=>savePTO())">Save</button>
+        </div>
       </div>
     </div>
     <div class="section-card" style="margin-bottom:1rem">
@@ -2179,7 +2280,10 @@ function renderPTOCustomerDetail(c){
       </div>
       <div class="coll-body ${stateBackups}" id="coll-backups-${c.id}">
         <div class="contacts-list">${backupRows||'<div style="font-size:13px;color:var(--text-hint);padding:4px 0">No back ups added yet.</div>'}</div>
-        <button class="btn-add-contact" onclick="ptoAddBackup('${c.id}')">+ Add back up</button>
+        <div style="display:flex;gap:8px;margin-top:4px">
+          <button class="btn-add-contact" style="flex:1;margin-top:0" onclick="ptoAddBackup('${c.id}')">+ Add back up</button>
+          <button class="btn-save-row" id="pto-bup-save-${c.id}" onclick="ptoSaveRow('pto-bup-save-${c.id}',()=>savePTO())">Save</button>
+        </div>
       </div>
     </div>
     <div class="section-card" style="margin-bottom:1rem">
@@ -2298,6 +2402,194 @@ function renderPTOSection(){
     ${renderPTOCustomerGrid(vc)}
   </div>
 `;
+}
+
+function setNavTab(tab){S.navTab=tab;render();}
+
+function getGreeting(){
+  const h=new Date().getHours();
+  const name=S.cfg.userName?', '+S.cfg.userName:'';
+  let main,sub;
+  if(h<12){main='Good morning'+name+'! \u2600';sub='Here\'s your overview for '+MONTHS[S.month]+' '+S.year+'.';}
+  else if(h<18){main='Good afternoon'+name+'! \uD83D\uDC4B';sub='Here\'s your overview for '+MONTHS[S.month]+' '+S.year+'.';}
+  else{main='Good evening'+name+'! \uD83C\uDF19';sub='Here\'s your overview for '+MONTHS[S.month]+' '+S.year+'.';}
+  return {main,sub};
+}
+
+function renderHeroStats(){
+  const vc=visibleCustomers();
+  const wh=weekHours(vc);
+  const weekTarget=40;
+  const utilPct=Math.round(Math.min(100,wh/weekTarget*100));
+  const utilColor=utilPct>=80?'var(--green)':utilPct>=50?'var(--amber)':'var(--blue)';
+  const th=vc.reduce((s,c)=>s+cHours(c.id),0);
+  const goal=S.cfg.monthlyGoal||125;
+  let payoutMonthIdx=S.month+2,payoutYear=S.year;
+  if(payoutMonthIdx>11){payoutMonthIdx-=12;payoutYear++;}
+  const grev=globalRevBreakdown(vc);
+  const base=salaryForMonth(S.year,S.month);
+  const forecastedPay=grev.total+base;
+  const pto2=ptoPct();
+  const ptoReady=pto2>=100;
+  const isFri=(new Date().getDay()===5);
+  function ibadge(bg,col,svgpath){return '<div class=\"hstat-ibadge\" style=\"background:'+bg+'\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"'+col+'\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">'+svgpath+'</svg></div>';}
+  const ptoCol=ptoReady?'#d97706':'#dc2626';
+  const ptoBg=ptoReady?'#fff7ed':'#fef2f2';
+  const friCard=isFri
+    ?'<div class=\"hstat\" style=\"border-color:#fed7aa\">'+ibadge('#fff7ed','#d97706','<path d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z\"/><polyline points=\"14 2 14 8 20 8\"/><line x1=\"8\" y1=\"13\" x2=\"16\" y2=\"13\"/><line x1=\"8\" y1=\"17\" x2=\"16\" y2=\"17\"/>')
+    +'<div class=\"hstat-label\" style=\"color:#d97706\">Friday</div>'
+    +'<div class=\"hstat-value\" style=\"color:#d97706;font-size:18px\">Time to bill! &#x1F4B8;</div>'
+    +'<div class=\"hstat-sub\">Don\'t forget to log your hours</div></div>':'';
+  return '<div class=\"hero-stats\">'+friCard
+    +'<div class=\"hstat\">'+ibadge('#eff6ff','#1860a8','<circle cx=\"12\" cy=\"12\" r=\"10\"/><polyline points=\"12 6 12 12 16 14\"/>')
+    +'<div class=\"hstat-label\">Billable Hours</div>'
+    +'<div class=\"hstat-value\">'+th.toFixed(1)+' <span style=\"font-size:14px;font-weight:500;color:#94a3b3\">/&nbsp;'+goal+'</span></div>'
+    +'<div class=\"hstat-sub\">'+Math.round(th/goal*100)+'% of monthly target</div>'
+    +'<div class=\"hstat-bar\"><div class=\"hstat-bar-fill\" style=\"width:'+Math.min(100,th/goal*100)+'%;background:#1860a8\"></div></div></div>'
+    +'<div class=\"hstat\">'+ibadge('#f0fdf4',utilColor,'<line x1=\"18\" y1=\"20\" x2=\"18\" y2=\"10\"/><line x1=\"12\" y1=\"20\" x2=\"12\" y2=\"4\"/><line x1=\"6\" y1=\"20\" x2=\"6\" y2=\"14\"/>')
+    +'<div class=\"hstat-label\">Utilization</div>'
+    +'<div class=\"hstat-value\">'+utilPct+'%</div>'
+    +'<div class=\"hstat-sub\">'+wh.toFixed(1)+'h / '+weekTarget+'h this week</div>'
+    +'<div class=\"hstat-bar\"><div class=\"hstat-bar-fill\" style=\"width:'+utilPct+'%;background:'+utilColor+'\"></div></div></div>'
+    +'<div class=\"hstat\">'+ibadge('#faf5ff','#9333ea','<line x1=\"12\" y1=\"1\" x2=\"12\" y2=\"23\"/><path d=\"M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6\"/>')
+    +'<div class=\"hstat-label\">Forecasted Pay</div>'
+    +'<div class=\"hstat-value\" style=\"font-size:'+(forecastedPay>=100000?'16':'22')+'px\">'+fmtMoney(forecastedPay)+'</div>'
+    +'<div class=\"hstat-sub\">Paid in '+MONTHS[payoutMonthIdx]+' '+payoutYear+'</div></div>'
+    +'<div class=\"hstat\">'+ibadge(ptoBg,ptoCol,'<rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\"/><line x1=\"16\" y1=\"2\" x2=\"16\" y2=\"6\"/><line x1=\"8\" y1=\"2\" x2=\"8\" y2=\"6\"/><line x1=\"3\" y1=\"10\" x2=\"21\" y2=\"10\"/>')
+    +'<div class=\"hstat-label\">PTO Readiness</div>'
+    +'<div class=\"hstat-value\" style=\"color:'+ptoCol+'\">'+( ptoReady?'Yes':'No')+'</div>'
+    +'<div class=\"hstat-sub\">'+(ptoReady?"You're ready to take PTO!":pto2+'% complete')+'</div></div>'
+    +'</div>';
+}
+
+function renderReportsView(){
+  const allC=[...S.active,...S.archived];
+  if(!S._reportFilters)S._reportFilters={cid:'',fromMonth:'',toMonth:''};
+  const rf=S._reportFilters;
+  const allMonths=new Set();
+  Object.keys(S.entries).forEach(k=>{const p=k.split('::');if(p[1])allMonths.add(p[1]);});
+  const sortedMonths=[...allMonths].sort();
+  const mOpts=sortedMonths.map(m=>'<option value="'+m+'"'+(rf.fromMonth===m?' selected':'')+'>'+m+'</option>').join('');
+  const mOpts2=sortedMonths.map(m=>'<option value="'+m+'"'+(rf.toMonth===m?' selected':'')+'>'+m+'</option>').join('');
+  const cOpts=allC.map(c=>'<option value="'+c.id+'"'+(rf.cid===c.id?' selected':'')+'>'+c.name+'</option>').join('');
+  const rows=[];
+  allC.forEach(c=>{
+    if(rf.cid&&rf.cid!==c.id)return;
+    Object.keys(S.entries).forEach(k=>{
+      const parts=k.split('::'),kcid=parts[0],kmonth=parts[1];
+      if(kcid!==c.id)return;
+      if(rf.fromMonth&&kmonth<rf.fromMonth)return;
+      if(rf.toMonth&&kmonth>rf.toMonth)return;
+      (S.entries[k]||[]).forEach(e=>{rows.push({customer:c.name,date:e.date,hours:e.hours,desc:e.desc||'',rev:e.hours*rate(c)});});
+    });
+  });
+  rows.sort((a,b)=>a.date.localeCompare(b.date));
+  const totalHours=rows.reduce((s,r)=>s+r.hours,0);
+  const totalRev=rows.reduce((s,r)=>s+r.rev,0);
+  const trows=rows.map(r=>'<tr><td>'+r.date+'</td><td>'+r.customer+'</td><td>'+r.hours.toFixed(1)+'h</td><td style="color:var(--green)">'+fmtMoney(r.rev)+'</td><td style="color:var(--text-secondary);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+r.desc+'</td></tr>').join('');
+  return '<div class="section-card" style="margin-bottom:1.25rem">'
+    +'<div class="section-header" style="margin-bottom:1rem"><h2 style="font-size:15px">Filter</h2></div>'
+    +'<div class="report-filters">'
+    +'<div class="field"><label>Customer</label><select onchange="S._reportFilters.cid=this.value;render()"><option value="">All customers</option>'+cOpts+'</select></div>'
+    +'<div class="field"><label>From month</label><select onchange="S._reportFilters.fromMonth=this.value;render()"><option value="">Any</option>'+mOpts+'</select></div>'
+    +'<div class="field"><label>To month</label><select onchange="S._reportFilters.toMonth=this.value;render()"><option value="">Any</option>'+mOpts2+'</select></div>'
+    +'<button class="btn-primary" onclick="exportReport()" style="align-self:flex-end;white-space:nowrap">'+ic.excel+' Export CSV</button>'
+    +'</div></div>'
+    +'<div class="section-card">'
+    +'<div class="section-header" style="margin-bottom:1rem"><h2 style="font-size:15px">Results <span style="font-size:13px;font-weight:400;color:var(--text-secondary)">('+rows.length+' entries)</span></h2>'
+    +'<span style="font-size:13px;color:var(--text-secondary)">'+totalHours.toFixed(1)+'h &nbsp;\u00B7&nbsp; '+fmtMoney(totalRev)+'</span></div>'
+    +(rows.length===0?'<div class="empty-state">No entries match the current filters.</div>'
+    :'<div style="overflow-x:auto"><table class="report-table"><thead><tr><th>Date</th><th>Customer</th><th>Hours</th><th>Revenue</th><th>Description</th></tr></thead><tbody>'+trows+'</tbody>'
+    +'<tfoot><tr class="report-total"><td colspan="2"><strong>Total</strong></td><td><strong>'+totalHours.toFixed(1)+'h</strong></td><td style="color:var(--green)"><strong>'+fmtMoney(totalRev)+'</strong></td><td></td></tr></tfoot></table></div>')
+    +'</div>';
+}
+
+function exportReport(){
+  if(!S._reportFilters)S._reportFilters={cid:'',fromMonth:'',toMonth:''};
+  const rf=S._reportFilters;
+  const allC=[...S.active,...S.archived];
+  const rows=[];
+  allC.forEach(c=>{
+    if(rf.cid&&rf.cid!==c.id)return;
+    Object.keys(S.entries).forEach(k=>{
+      const parts=k.split('::'),kcid=parts[0],kmonth=parts[1];
+      if(kcid!==c.id)return;
+      if(rf.fromMonth&&kmonth<rf.fromMonth)return;
+      if(rf.toMonth&&kmonth>rf.toMonth)return;
+      (S.entries[k]||[]).forEach(e=>{rows.push([e.date,c.name,e.hours.toFixed(2),fmtMoney(e.hours*rate(c)),e.desc||'']);});
+    });
+  });
+  rows.sort((a,b)=>a[0].localeCompare(b[0]));
+  const csv=[['Date','Customer','Hours','Revenue','Description'],...rows].map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='billable-hours-report.csv';a.click();
+}
+
+function renderExportPanel(){
+  if(!S._xf)S._xf={cids:[],from:'',to:''};
+  const xf=S._xf;
+  if(!Array.isArray(xf.cids))xf.cids=[];
+  const allC=[...S.active,...S.archived];
+  const xlsIc='<svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-2px;margin-right:4px" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>';
+  const tick='<svg style="width:9px;height:9px;stroke:#fff;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>';
+  const tickBlue='<svg style="width:9px;height:9px;stroke:var(--blue);fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>';
+  const allSel=xf.cids.length===0;
+  const allRow='<label style="display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:13px;color:var(--text-secondary)" onclick="xfClearCusts()">'
+    +'<span style="width:15px;height:15px;border-radius:4px;border:2px solid '+(allSel?'var(--blue)':'var(--border2)')+';background:'+(allSel?'var(--surface)':'var(--surface)')+';display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">'
+    +(allSel?tickBlue:'')+'</span>All customers</label>';
+  const custRows=allC.map(function(cu){
+    const chk=xf.cids.includes(cu.id);
+    const box='<span style="width:15px;height:15px;border-radius:4px;border:2px solid '+(chk?'var(--blue)':'var(--border2)')+';background:'+(chk?'var(--blue)':'var(--surface)')+';display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">'+(chk?tick:'')+'</span>';
+    return '<label style="display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:13px" onclick="xfToggleCust(this.dataset.id)" data-id="'+cu.id+'">'+box+cu.name+'</label>';
+  }).join('');
+  const selCount=xf.cids.length;
+  const selLabel=selCount===0?'All customers':selCount===1?(allC.find(function(cu){return cu.id===xf.cids[0];})||{name:'1 selected'}).name:selCount+' customers selected';
+  return '<div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:flex-end">'
+    +'<div class="field" style="margin:0"><label>Customers</label>'
+    +'<div style="position:relative">'
+    +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;cursor:pointer;font-size:14px;color:var(--text);user-select:none" onclick="document.getElementById(\'xf-drop\').classList.toggle(\'open\')">'+selLabel+' \u25BE</div>'
+    +'<div id="xf-drop" style="display:none;position:absolute;top:calc(100% + 4px);left:0;min-width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);z-index:99;max-height:200px;overflow-y:auto;padding:4px;box-shadow:0 4px 16px rgba(0,0,0,0.1)">'
+    +allRow+custRows+'</div></div></div>'
+    +'<div class="field" style="margin:0"><label>Date from</label>'
+    +'<input type="date" value="'+xf.from+'" onchange="S._xf.from=this.value"></div>'
+    +'<div class="field" style="margin:0"><label>Date until</label>'
+    +'<input type="date" value="'+xf.to+'" onchange="S._xf.to=this.value"></div>'
+    +'<button class="btn-primary" onclick="exportXls()" style="white-space:nowrap;align-self:flex-end;margin-bottom:0">'+xlsIc+'Export XLS</button></div>';
+}
+function xfToggleCust(id){
+  if(!S._xf)S._xf={cids:[],from:'',to:''};
+  if(!Array.isArray(S._xf.cids))S._xf.cids=[];
+  const i=S._xf.cids.indexOf(id);
+  if(i>=0)S._xf.cids.splice(i,1);else S._xf.cids.push(id);
+  render();
+}
+function xfClearCusts(){if(S._xf)S._xf.cids=[];render();}
+
+function exportXls(){
+  if(!S._xf)S._xf={cids:[],from:'',to:''};
+  const xf=S._xf;
+  if(!Array.isArray(xf.cids))xf.cids=[];
+  const allC=[...S.active,...S.archived];
+  const dataRows=[];
+  allC.forEach(cu=>{
+    if(xf.cids.length>0&&!xf.cids.includes(cu.id))return;
+    Object.keys(S.entries).forEach(k=>{
+      const parts=k.split('::'),kcid=parts[0];
+      if(kcid!==cu.id)return;
+      (S.entries[k]||[]).forEach(e=>{
+        if(xf.from&&e.date<xf.from)return;
+        if(xf.to&&e.date>xf.to)return;
+        dataRows.push([e.date,cu.name,e.hours,parseFloat((e.hours*rate(cu)).toFixed(2)),e.desc||'']);
+      });
+    });
+  });
+  dataRows.sort((a,b)=>a[0].localeCompare(b[0]));
+  if(typeof XLSX==='undefined'){alert('XLSX library not loaded');return;}
+  const ws=XLSX.utils.aoa_to_sheet([['Date','Customer','Hours','Revenue','Description'],...dataRows]);
+  ws['!cols']=[{wch:12},{wch:22},{wch:8},{wch:14},{wch:40}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,'Billable Hours',ws);
+  XLSX.writeFile(wb,'billable-hours-report.xlsx');
 }
 
 load();
