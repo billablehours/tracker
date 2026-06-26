@@ -184,6 +184,8 @@ textarea{resize:vertical;height:80px}
 .hstat-sub{font-size:11px;color:var(--text-hint);margin-top:5px}
 .hstat-bar{height:5px;border-radius:99px;background:var(--bg);margin-top:10px;overflow:hidden}
 .hstat-bar-fill{height:5px;border-radius:99px;transition:width 0.4s}
+input[type="date"]{cursor:pointer}
+input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:0.6;padding:2px}
 .hstat-yes{font-size:22px;font-weight:700}
 /* Accordion redesign */
 .accordion{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.05)}
@@ -857,7 +859,7 @@ function renderDashboard(app){
         <p class="sec-label">Profile</p>
         <div class="field" style="max-width:260px;margin-bottom:1rem">
           <label>Your name</label>
-          <input id="s-name" type="text" value="${S.cfg.userName||''}" placeholder="e.g. Nick" oninput="liveCfg()">
+          <input id="s-name" type="text" value="${S.cfg.userName||''}" placeholder="" oninput="liveCfg()">
           <div class="field-hint">Used in the greeting banner</div>
         </div>
         <p class="sec-label">Billing</p>
@@ -2527,7 +2529,7 @@ function exportReport(){
 }
 
 function renderExportPanel(){
-  if(!S._xf)S._xf={cids:[],from:'',to:'',drop:false};
+  if(!S._xf)S._xf={cids:[],from:'',to:'',drop:false,calOpen:'',calYear:new Date().getFullYear(),calMonth:new Date().getMonth()};
   const xf=S._xf;
   if(!Array.isArray(xf.cids))xf.cids=[];
   const allC=[...S.active,...S.archived];
@@ -2556,10 +2558,26 @@ function renderExportPanel(){
     +selLabel+' &#9660;</div>'
     +'<div style="'+dropStyle+'">'+allRow+custRows+'</div>'
     +'</div></div>'
-    +'<div style="flex:1;min-width:130px"><label style="display:block;font-size:13px;color:var(--text-secondary);margin-bottom:5px">Date from</label>'
-    +'<input id="xf-from" type="date" value="'+xf.from+'" oninput="S._xf.from=this.value" onchange="S._xf.from=this.value" style="width:100%"></div>'
-    +'<div style="flex:1;min-width:130px"><label style="display:block;font-size:13px;color:var(--text-secondary);margin-bottom:5px">Date until</label>'
-    +'<input id="xf-to" type="date" value="'+xf.to+'" oninput="S._xf.to=this.value" onchange="S._xf.to=this.value" style="width:100%"></div>'
+    +'<div style="flex:1;min-width:130px">'
+    +'<label style="display:block;font-size:13px;color:var(--text-secondary);margin-bottom:5px">Date from</label>'
+    +'<div class="pto-cal-wrap">'
+    +'<div class="pto-cal-trigger' +(xf.calOpen==='xf-from'?' open':'')+ '" onclick="xfOpenCal(this,\'xf-from\')" style="width:100%">'
+    +'<svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>'
+    +'<span class="cal-val">'+(xf.from?xfFmtDate(xf.from):'Date from')+'</span>'
+    +(xf.from?'<button style="background:none;border:none;color:var(--text-hint);font-size:16px;padding:0;cursor:pointer" onclick="event.stopPropagation();S._xf.from=\'\';render()">&#x2715;</button>':'')
+    +'</div>'
+    +(xf.calOpen==='xf-from'?xfRenderCal('xf-from'):'')
+    +'</div></div>'
+    +'<div style="flex:1;min-width:130px">'
+    +'<label style="display:block;font-size:13px;color:var(--text-secondary);margin-bottom:5px">Date until</label>'
+    +'<div class="pto-cal-wrap">'
+    +'<div class="pto-cal-trigger' +(xf.calOpen==='xf-until'?' open':'')+ '" onclick="xfOpenCal(this,\'xf-until\')" style="width:100%">'
+    +'<svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>'
+    +'<span class="cal-val">'+(xf.to?xfFmtDate(xf.to):'Date until')+'</span>'
+    +(xf.to?'<button style="background:none;border:none;color:var(--text-hint);font-size:16px;padding:0;cursor:pointer" onclick="event.stopPropagation();S._xf.to=\'\';render()">&#x2715;</button>':'')
+    +'</div>'
+    +(xf.calOpen==='xf-until'?xfRenderCal('xf-until'):'')
+    +'</div></div>'
     +'<div style="flex:0 0 auto"><button class="btn-primary" onclick="exportXls()">'+xlsIc+'Export XLS</button></div>'
     +'</div>';
 }
@@ -2581,11 +2599,6 @@ function exportXls(){
   if(!S._xf)S._xf={cids:[],from:'',to:''};
   const xf=S._xf;
   if(!Array.isArray(xf.cids))xf.cids=[];
-  // Read date values directly from DOM in case onchange didn't fire
-  const fromEl=document.getElementById('xf-from');
-  const toEl=document.getElementById('xf-to');
-  if(fromEl)xf.from=fromEl.value;
-  if(toEl)xf.to=toEl.value;
   const allC=[...S.active,...S.archived];
   const dataRows=[];
   allC.forEach(cu=>{
@@ -2596,7 +2609,7 @@ function exportXls(){
       (S.entries[k]||[]).forEach(e=>{
         if(xf.from&&e.date<xf.from)return;
         if(xf.to&&e.date>xf.to)return;
-        dataRows.push([e.date,cu.name,e.hours,parseFloat((e.hours*rate(cu)).toFixed(2)),e.desc||'']);
+        dataRows.push([e.date,cu.name,e.hours,e.desc||'']);
       });
     });
   });
@@ -2606,9 +2619,9 @@ function exportXls(){
   const esc=v=>String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const numCell=v=>'<Cell><Data ss:Type="Number">'+v+'</Data></Cell>';
   const strCell=v=>'<Cell><Data ss:Type="String">'+esc(v)+'</Data></Cell>';
-  const hdr=['Date','Customer','Hours','Revenue','Description'];
+  const hdr=['Date','Customer','Hours','Description'];
   const hdrRow='<Row>'+hdr.map(h=>'<Cell><Data ss:Type="String">'+h+'</Data></Cell>').join('')+'</Row>';
-  const rows=dataRows.map(r=>'<Row>'+strCell(r[0])+strCell(r[1])+numCell(r[2])+numCell(r[3])+strCell(r[4])+'</Row>').join('');
+  const rows=dataRows.map(r=>'<Row>'+strCell(r[0])+strCell(r[1])+numCell(r[2])+strCell(r[3])+'</Row>').join('');
   const xml='<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?>'
     +'<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'
     +'<Worksheet ss:Name="Billable Hours"><Table>'+hdrRow+rows+'</Table></Worksheet></Workbook>';
@@ -2618,6 +2631,62 @@ function exportXls(){
   a.download='billable-hours-report.xls';
   document.body.appendChild(a);a.click();document.body.removeChild(a);
   URL.revokeObjectURL(a.href);
+}
+
+function xfFmtDate(str){
+  if(!str)return '';
+  var d=new Date(str+'T00:00:00');
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+function xfOpenCal(el,which){
+  if(!S._xf)S._xf={cids:[],from:'',to:'',drop:false,calOpen:'',calYear:new Date().getFullYear(),calMonth:new Date().getMonth()};
+  if(S._xf.calOpen===which){S._xf.calOpen='';render();return;}
+  var val=which==='xf-from'?S._xf.from:S._xf.to;
+  if(val){var d=new Date(val+'T00:00:00');S._xf.calYear=d.getFullYear();S._xf.calMonth=d.getMonth();}
+  else{var n=new Date();S._xf.calYear=n.getFullYear();S._xf.calMonth=n.getMonth();}
+  S._xf.calOpen=which;
+  render();
+}
+function xfCalNav(dir){
+  if(!S._xf)return;
+  var m=S._xf.calMonth+dir,y=S._xf.calYear;
+  if(m<0){m=11;y--;}if(m>11){m=0;y++;}
+  S._xf.calMonth=m;S._xf.calYear=y;render();
+}
+function xfPickDay(which,ds){
+  if(!S._xf)return;
+  if(which==='xf-from')S._xf.from=ds;else S._xf.to=ds;
+  S._xf.calOpen='';render();
+}
+function xfRenderCal(which){
+  if(!S._xf)return '';
+  var year=S._xf.calYear||new Date().getFullYear();
+  var month=S._xf.calMonth!=null?S._xf.calMonth:new Date().getMonth();
+  var todayStr=today();
+  var selFrom=S._xf.from||'';
+  var selUntil=S._xf.to||'';
+  var firstDay=new Date(year,month,1).getDay();
+  var startOffset=(firstDay===0)?6:firstDay-1;
+  var daysInMonth=new Date(year,month+1,0).getDate();
+  var DAY_HDRS=['Mo','Tu','We','Th','Fr','Sa','Su'];
+  var cells='';
+  for(var i=0;i<startOffset;i++) cells+='<div class="cal-day empty"></div>';
+  for(var d=1;d<=daysInMonth;d++){
+    var ds=year+'-'+p2(month+1)+'-'+p2(d);
+    var cls='cal-day';
+    if(ds===todayStr) cls+=' today';
+    if((which==='xf-from'&&ds===selFrom)||(which==='xf-until'&&ds===selUntil)) cls+=' selected';
+    if(selFrom&&selUntil&&ds>selFrom&&ds<selUntil) cls+=' in-range';
+        cells+='<div class="'+cls+'" data-w="'+which+'" data-d="'+ds+'" onclick="event.stopPropagation();xfPickDay(this.dataset.w,this.dataset.d)">'+d+'</div>';
+  }
+  return '<div class="pto-cal-popup">'
+    +'<div class="cal-nav">'
+    +'<button class="cal-nav-btn" onclick="event.stopPropagation();xfCalNav(-1)">&#8249;</button>'
+    +'<span class="cal-month-label">'+MONTHS[month]+' '+year+'</span>'
+    +'<button class="cal-nav-btn" onclick="event.stopPropagation();xfCalNav(1)">&#8250;</button>'
+    +'</div><div class="cal-grid">'
+    +DAY_HDRS.map(function(h){return '<div class="cal-day-hdr">'+h+'</div>';}).join('')
+    +cells+'</div></div>';
 }
 
 load();
