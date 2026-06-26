@@ -162,46 +162,46 @@ textarea{resize:vertical;height:80px}
 
 /* Top Navbar */
 .top-nav{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #eaecf0;display:flex;align-items:center;padding:0 2rem;height:56px;gap:0}
-.nav-logo{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;color:#1a2530;white-space:nowrap}
+.nav-logo{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;color:var(--text);white-space:nowrap}
 .nav-logo-icon{width:28px;height:28px;background:linear-gradient(135deg,#4f8ef7,#1860a8);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .nav-tabs{display:flex;align-items:center;justify-content:center;flex:1}
-.nav-tab{background:none;border:none;padding:7px 18px;border-radius:99px;font-size:14px;font-weight:500;color:#5c6b7a;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:6px}
-.nav-tab:hover{background:#f4f6f8;color:#1a2530}
+.nav-tab{background:none;border:none;padding:7px 18px;border-radius:99px;font-size:14px;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:6px}
+.nav-tab:hover{background:var(--bg);color:var(--text)}
 .nav-tab.active{background:#eef3ff;color:#1860a8;font-weight:600}
 .nav-right{display:flex;align-items:center;gap:10px;margin-left:auto}
 /* Hero banner */
 .hero-banner{background:linear-gradient(120deg,#dce8ff 0%,#e8f0fb 60%,#eef3ff 100%);border:none;border-radius:16px;padding:1.75rem 2rem;margin-bottom:1.25rem;position:relative;overflow:hidden;min-height:100px}
 .hero-banner-art{position:absolute;right:0;top:0;bottom:0;width:38%;pointer-events:none;overflow:hidden}
-.hero-greeting{font-size:22px;font-weight:700;color:#1a2530;line-height:1.2;position:relative;z-index:1}
-.hero-sub{font-size:13px;color:#5c6b7a;margin-top:4px;position:relative;z-index:1}
+.hero-greeting{font-size:22px;font-weight:700;color:var(--text);line-height:1.2;position:relative;z-index:1}
+.hero-sub{font-size:13px;color:var(--text-secondary);margin-top:4px;position:relative;z-index:1}
 /* Hero stat cards */
 .hero-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin-bottom:1.25rem}
-.hstat{background:#fff;border:1px solid #eaecf0;border-radius:14px;padding:1.1rem 1.25rem;box-shadow:0 1px 4px rgba(0,0,0,0.05);transition:box-shadow 0.15s}
+.hstat{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.25rem;box-shadow:0 1px 4px rgba(0,0,0,0.05);transition:box-shadow 0.15s}
 .hstat:hover{box-shadow:0 3px 10px rgba(0,0,0,0.09)}
 .hstat-ibadge{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
-.hstat-label{font-size:10px;color:#94a3b3;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:5px;font-weight:600}
-.hstat-value{font-size:22px;font-weight:700;color:#1a2530;line-height:1.1}
-.hstat-sub{font-size:11px;color:#94a3b3;margin-top:5px}
-.hstat-bar{height:5px;border-radius:99px;background:#f0f2f5;margin-top:10px;overflow:hidden}
+.hstat-label{font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:5px;font-weight:600}
+.hstat-value{font-size:22px;font-weight:700;color:var(--text);line-height:1.1}
+.hstat-sub{font-size:11px;color:var(--text-hint);margin-top:5px}
+.hstat-bar{height:5px;border-radius:99px;background:var(--bg);margin-top:10px;overflow:hidden}
 .hstat-bar-fill{height:5px;border-radius:99px;transition:width 0.4s}
 .hstat-yes{font-size:22px;font-weight:700}
 /* Accordion redesign */
-.accordion{background:#fff;border:1px solid #eaecf0;border-radius:14px;margin-bottom:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.accordion{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.05)}
 .acc-hdr{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;cursor:pointer;user-select:none;transition:background 0.15s}
-.acc-hdr:hover{background:#fafbfc}
+.acc-hdr:hover{background:var(--bg)}
 .acc-hdr-left{display:flex;align-items:center;gap:12px}
 .acc-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:none}
-.acc-title{font-weight:600;font-size:15px;color:#1a2530}
-.acc-sub{font-size:12px;color:#94a3b3;margin-top:1px}
+.acc-title{font-weight:600;font-size:15px;color:var(--text)}
+.acc-sub{font-size:12px;color:var(--text-hint);margin-top:1px}
 .acc-chev{color:#c3ccd6;transition:transform 0.2s;display:flex;align-items:center}
 .acc-chev.open{transform:rotate(180deg)}
 /* tip */
-.page-tip{text-align:center;padding:1.5rem 0 2rem;font-size:12px;color:#b0bbc8}
+.page-tip{text-align:center;padding:1.5rem 0 2rem;font-size:12px;color:var(--text-hint)}
 /* dark */
 [data-theme="dark"] .top-nav{background:#1a232e;border-color:#2a3744}
-[data-theme="dark"] .hstat{background:#1a232e;border-color:#2a3744;box-shadow:none}
 [data-theme="dark"] .hero-banner{background:linear-gradient(120deg,#1a2d4a 0%,#1e3358 100%)}
-[data-theme="dark"] .accordion{background:#1a232e;border-color:#2a3744;box-shadow:none}
+[data-theme="dark"] .hstat{box-shadow:none}
+[data-theme="dark"] .accordion{box-shadow:none}
 /* Reports */
 .report-filters{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:1.25rem;align-items:flex-end}
 .report-filters .field{margin:0;min-width:140px;flex:1}
@@ -817,14 +817,14 @@ function renderDashboard(app){
         <div class="acc-chev" id="chev-an"><svg class="ic" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg></div>
       </div>
       <div class="acc-body ${S.accOpen.an?"open":""}" id="body-an">
+        <p class="sec-label">Export billable hours</p>
+        ${renderExportPanel()}
+        <div class="divider"></div>
         <p class="sec-label">Billable hours by customer</p>
         ${renderAnalyticsChart()}
         <div class="divider"></div>
         <p class="sec-label">Income received per month</p>
         ${renderIncomeChart()}
-        <div class="divider"></div>
-        <p class="sec-label">Export billable hours</p>
-        ${renderExportPanel()}
       </div>
     </div>
   </div>
@@ -2526,7 +2526,7 @@ function exportReport(){
 }
 
 function renderExportPanel(){
-  if(!S._xf)S._xf={cids:[],from:'',to:''};
+  if(!S._xf)S._xf={cids:[],from:'',to:'',drop:false};
   const xf=S._xf;
   if(!Array.isArray(xf.cids))xf.cids=[];
   const allC=[...S.active,...S.archived];
@@ -2534,41 +2534,57 @@ function renderExportPanel(){
   const tick='<svg style="width:9px;height:9px;stroke:#fff;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>';
   const tickBlue='<svg style="width:9px;height:9px;stroke:var(--blue);fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>';
   const allSel=xf.cids.length===0;
+  const selCount=xf.cids.length;
+  const selLabel=allSel?'All customers':selCount===1?(allC.find(function(cu){return cu.id===xf.cids[0];})||{name:'1 selected'}).name:selCount+' customers selected';
   const allRow='<label style="display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:13px;color:var(--text-secondary)" onclick="xfClearCusts()">'
-    +'<span style="width:15px;height:15px;border-radius:4px;border:2px solid '+(allSel?'var(--blue)':'var(--border2)')+';background:'+(allSel?'var(--surface)':'var(--surface)')+';display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">'
+    +'<span style="width:15px;height:15px;border-radius:4px;border:2px solid '+(allSel?'var(--blue)':'var(--border2)')+';background:var(--surface);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">'
     +(allSel?tickBlue:'')+'</span>All customers</label>';
   const custRows=allC.map(function(cu){
     const chk=xf.cids.includes(cu.id);
-    const box='<span style="width:15px;height:15px;border-radius:4px;border:2px solid '+(chk?'var(--blue)':'var(--border2)')+';background:'+(chk?'var(--blue)':'var(--surface)')+';display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">'+(chk?tick:'')+'</span>';
-    return '<label style="display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:13px" onclick="xfToggleCust(this.dataset.id)" data-id="'+cu.id+'">'+box+cu.name+'</label>';
+    return '<label style="display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:13px" onclick="xfToggleCust(this.dataset.id)" data-id="'+cu.id+'">'
+      +'<span style="width:15px;height:15px;border-radius:4px;border:2px solid '+(chk?'var(--blue)':'var(--border2)')+';background:'+(chk?'var(--blue)':'var(--surface)')+';display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">'
+      +(chk?tick:'')+'</span>'+cu.name+'</label>';
   }).join('');
-  const selCount=xf.cids.length;
-  const selLabel=selCount===0?'All customers':selCount===1?(allC.find(function(cu){return cu.id===xf.cids[0];})||{name:'1 selected'}).name:selCount+' customers selected';
-  return '<div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:flex-end">'
-    +'<div class="field" style="margin:0"><label>Customers</label>'
+  const dropStyle=xf.drop
+    ?'position:absolute;top:calc(100% + 4px);left:0;min-width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);z-index:99;max-height:200px;overflow-y:auto;padding:4px;box-shadow:0 4px 16px rgba(0,0,0,0.1)'
+    :'display:none';
+  return '<div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">'
+    +'<div style="flex:1.4;min-width:160px"><label style="display:block;font-size:13px;color:var(--text-secondary);margin-bottom:5px">Customers</label>'
     +'<div style="position:relative">'
-    +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;cursor:pointer;font-size:14px;color:var(--text);user-select:none" onclick="document.getElementById(\'xf-drop\').classList.toggle(\'open\')">'+selLabel+' \u25BE</div>'
-    +'<div id="xf-drop" style="display:none;position:absolute;top:calc(100% + 4px);left:0;min-width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);z-index:99;max-height:200px;overflow-y:auto;padding:4px;box-shadow:0 4px 16px rgba(0,0,0,0.1)">'
-    +allRow+custRows+'</div></div></div>'
-    +'<div class="field" style="margin:0"><label>Date from</label>'
-    +'<input type="date" value="'+xf.from+'" onchange="S._xf.from=this.value"></div>'
-    +'<div class="field" style="margin:0"><label>Date until</label>'
-    +'<input type="date" value="'+xf.to+'" onchange="S._xf.to=this.value"></div>'
-    +'<button class="btn-primary" onclick="exportXls()" style="white-space:nowrap;align-self:flex-end;margin-bottom:0">'+xlsIc+'Export XLS</button></div>';
+    +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;cursor:pointer;font-size:14px;color:var(--text);user-select:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" onclick="xfToggleDrop()">'
+    +selLabel+' &#9660;</div>'
+    +'<div style="'+dropStyle+'">'+allRow+custRows+'</div>'
+    +'</div></div>'
+    +'<div style="flex:1;min-width:130px"><label style="display:block;font-size:13px;color:var(--text-secondary);margin-bottom:5px">Date from</label>'
+    +'<input id="xf-from" type="date" value="'+xf.from+'" oninput="S._xf.from=this.value" onchange="S._xf.from=this.value" style="width:100%"></div>'
+    +'<div style="flex:1;min-width:130px"><label style="display:block;font-size:13px;color:var(--text-secondary);margin-bottom:5px">Date until</label>'
+    +'<input id="xf-to" type="date" value="'+xf.to+'" oninput="S._xf.to=this.value" onchange="S._xf.to=this.value" style="width:100%"></div>'
+    +'<div style="flex:0 0 auto"><button class="btn-primary" onclick="exportXls()">'+xlsIc+'Export XLS</button></div>'
+    +'</div>';
+}
+function xfToggleDrop(){
+  if(!S._xf)S._xf={cids:[],from:'',to:'',drop:false};
+  S._xf.drop=!S._xf.drop;
+  render();
 }
 function xfToggleCust(id){
-  if(!S._xf)S._xf={cids:[],from:'',to:''};
+  if(!S._xf)S._xf={cids:[],from:'',to:'',drop:true};
   if(!Array.isArray(S._xf.cids))S._xf.cids=[];
   const i=S._xf.cids.indexOf(id);
   if(i>=0)S._xf.cids.splice(i,1);else S._xf.cids.push(id);
   render();
 }
-function xfClearCusts(){if(S._xf)S._xf.cids=[];render();}
+function xfClearCusts(){if(S._xf){S._xf.cids=[];S._xf.drop=false;}render();}
 
 function exportXls(){
   if(!S._xf)S._xf={cids:[],from:'',to:''};
   const xf=S._xf;
   if(!Array.isArray(xf.cids))xf.cids=[];
+  // Read date values directly from DOM in case onchange didn't fire
+  const fromEl=document.getElementById('xf-from');
+  const toEl=document.getElementById('xf-to');
+  if(fromEl)xf.from=fromEl.value;
+  if(toEl)xf.to=toEl.value;
   const allC=[...S.active,...S.archived];
   const dataRows=[];
   allC.forEach(cu=>{
