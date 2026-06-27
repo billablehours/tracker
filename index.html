@@ -729,18 +729,82 @@ function renderDashboard(app){
     <div class="hero-greeting">${greeting.main}</div>
     <div class="hero-sub" style="${isBillingDay()?'font-weight:600;color:#d97706;font-size:14px;':''}">${greeting.sub}</div>
     <div class="hero-banner-art">
-      <svg viewBox="0 0 300 130" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
-        <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c7d9f8" stop-opacity=".5"/><stop offset="100%" stop-color="#dce8ff" stop-opacity="0"/></linearGradient></defs>
-        <rect width="300" height="130" fill="url(#sky)"/>
-        <circle cx="230" cy="28" r="16" fill="#ffe082" opacity=".85"/>
-        <ellipse cx="180" cy="38" rx="40" ry="14" fill="#fff" opacity=".55"/>
-        <ellipse cx="230" cy="45" rx="28" ry="10" fill="#fff" opacity=".45"/>
-        <ellipse cx="150" cy="100" rx="90" ry="38" fill="#6aaf6a" opacity=".38"/>
-        <ellipse cx="265" cy="110" rx="55" ry="28" fill="#558b55" opacity=".32"/>
-        <ellipse cx="80" cy="115" rx="70" ry="30" fill="#4a7c4a" opacity=".25"/>
-        <ellipse cx="200" cy="72" rx="35" ry="50" fill="#8fa8c8" opacity=".22"/>
-        <ellipse cx="240" cy="80" rx="22" ry="38" fill="#7090b8" opacity=".18"/>
-      </svg>
+      ${(()=>{
+        const hr=new Date().getHours();
+        // Time periods: night 0-5, dawn 5-7, morning 7-11, midday 11-14, afternoon 14-17, dusk 17-20, evening 20-22, night 22-24
+        let sky1,sky2,sunX,sunY,sunR,sunColor,sunGlow,showMoon,starOp,cloudOp,hillColor1,hillColor2,hillColor3,buildColor1,buildColor2,fogOp;
+        if(hr>=5&&hr<7){
+          // Dawn — pink/orange sky, sun rising low
+          sky1='#f9c784';sky2='#fde9c9';sunX=60;sunY=100;sunR=18;sunColor='#ff9f43';sunGlow='#ffcc80';showMoon=false;starOp=0;cloudOp='.35';hillColor1='#5a9e5a';hillColor2='#4a8a4a';hillColor3='#3a723a';buildColor1='#7a9ab8';buildColor2='#6080a0';fogOp='.18';
+        } else if(hr>=7&&hr<11){
+          // Morning — bright blue sky, sun mid-low
+          sky1='#a8d8f0';sky2='#d4edf8';sunX=80;sunY=45;sunR=15;sunColor='#ffe566';sunGlow='#fff0a0';showMoon=false;starOp=0;cloudOp='.6';hillColor1='#6aaf6a';hillColor2='#558b55';hillColor3='#4a7c4a';buildColor1='#8fa8c8';buildColor2='#7090b8';fogOp='.08';
+        } else if(hr>=11&&hr<14){
+          // Midday — bright sky, sun high
+          sky1='#7ec8e3';sky2='#c4e8f5';sunX=150;sunY=22;sunR=17;sunColor='#fff176';sunGlow='#fffde7';showMoon=false;starOp=0;cloudOp='.7';hillColor1='#72b872';hillColor2='#5e9e5e';hillColor3='#508050';buildColor1='#90aac8';buildColor2='#7292ba';fogOp='.05';
+        } else if(hr>=14&&hr<17){
+          // Afternoon — slightly warmer sky, sun past peak
+          sky1='#c7d9f8';sky2='#dce8ff';sunX=230;sunY=28;sunR=16;sunColor='#ffe082';sunGlow='#fff3c0';showMoon=false;starOp=0;cloudOp='.55';hillColor1='#6aaf6a';hillColor2='#558b55';hillColor3='#4a7c4a';buildColor1='#8fa8c8';buildColor2='#7090b8';fogOp='.08';
+        } else if(hr>=17&&hr<20){
+          // Dusk — golden/orange sky, sun setting on horizon
+          sky1='#f4a340';sky2='#f9d08a';sunX=260;sunY=95;sunR=20;sunColor='#ff7043';sunGlow='#ff8a65';showMoon=false;starOp=0;cloudOp='.4';hillColor1='#3d6b3d';hillColor2='#2e5430';hillColor3='#243e24';buildColor1='#4a5f78';buildColor2='#384a60';fogOp='.22';
+        } else if(hr>=20&&hr<22){
+          // Evening — deep blue/purple, moon rising
+          sky1='#2c3e6e';sky2='#4a5a8a';sunX=230;sunY=30;sunR=12;sunColor='#e8eaf6';sunGlow='#c5cae9';showMoon=true;starOp=.5;cloudOp='.15';hillColor1='#2a4a2a';hillColor2='#1e381e';hillColor3='#162a16';buildColor1='#2a3a50';buildColor2='#1e2c3e';fogOp='.3';
+        } else {
+          // Night — dark sky, moon high, stars
+          sky1='#0f1f4a';sky2='#1a2d5e';sunX=200;sunY=25;sunR=13;sunColor='#e8eaf6';sunGlow='#9fa8da';showMoon=true;starOp=.9;cloudOp='.08';hillColor1='#1a2e1a';hillColor2='#122212';hillColor3='#0e1a0e';buildColor1='#18263a';buildColor2='#101c2c';fogOp='.35';
+        }
+        const isNight=hr>=20||hr<5,isDusk=hr>=17&&hr<20,isDawn=hr>=5&&hr<7;
+        return `<svg viewBox="0 0 300 130" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+          <defs>
+            <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="${sky1}" stop-opacity=".9"/>
+              <stop offset="100%" stop-color="${sky2}" stop-opacity=".2"/>
+            </linearGradient>
+            <radialGradient id="sunglow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="${sunGlow}" stop-opacity=".6"/>
+              <stop offset="100%" stop-color="${sunGlow}" stop-opacity="0"/>
+            </radialGradient>
+            ${isDusk||isDawn?`<linearGradient id="horizon" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${sky1}" stop-opacity="0"/><stop offset="100%" stop-color="${sunColor}" stop-opacity=".35"/></linearGradient>`:''}
+          </defs>
+          <rect width="300" height="130" fill="url(#sky)"/>
+          ${isDusk||isDawn?'<rect width="300" height="130" fill="url(#horizon)"/>'  :''}
+          ${starOp>0?`
+            <circle cx="20"  cy="12" r="1"   fill="#fff" opacity="${starOp*.9}"/>
+            <circle cx="55"  cy="8"  r="1.2" fill="#fff" opacity="${starOp}"/>
+            <circle cx="95"  cy="18" r=".8"  fill="#fff" opacity="${starOp*.7}"/>
+            <circle cx="130" cy="6"  r="1"   fill="#fff" opacity="${starOp*.85}"/>
+            <circle cx="170" cy="14" r=".9"  fill="#fff" opacity="${starOp*.6}"/>
+            <circle cx="40"  cy="30" r=".7"  fill="#fff" opacity="${starOp*.5}"/>
+            <circle cx="110" cy="32" r=".8"  fill="#fff" opacity="${starOp*.65}"/>
+          `:''}
+          <!-- sun glow halo -->
+          <ellipse cx="${sunX}" cy="${sunY}" rx="${sunR*2.2}" ry="${sunR*2.2}" fill="url(#sunglow)"/>
+          ${showMoon
+            ?`<!-- moon with crater detail -->
+              <circle cx="${sunX}" cy="${sunY}" r="${sunR}" fill="${sunColor}" opacity=".92"/>
+              <circle cx="${sunX+4}" cy="${sunY-3}" r="${sunR*.35}" fill="${sky1}" opacity=".4"/>
+              <circle cx="${sunX-3}" cy="${sunY+4}" r="${sunR*.22}" fill="${sky1}" opacity=".3"/>`
+            :`<!-- sun -->
+              <circle cx="${sunX}" cy="${sunY}" r="${sunR}" fill="${sunColor}" opacity=".9"/>`
+          }
+          <!-- clouds -->
+          <ellipse cx="165" cy="38" rx="42" ry="13" fill="#fff" opacity="${cloudOp}"/>
+          <ellipse cx="195" cy="32" rx="28" ry="10" fill="#fff" opacity="${cloudOp}"/>
+          <ellipse cx="60"  cy="28" rx="30" ry="10" fill="#fff" opacity="${parseFloat(cloudOp)*.7}"/>
+          <ellipse cx="82"  cy="22" rx="20" ry="8"  fill="#fff" opacity="${parseFloat(cloudOp)*.6}"/>
+          <!-- hills -->
+          <ellipse cx="150" cy="100" rx="90" ry="38" fill="${hillColor1}" opacity=".5"/>
+          <ellipse cx="265" cy="110" rx="55" ry="28" fill="${hillColor2}" opacity=".45"/>
+          <ellipse cx="80"  cy="115" rx="70" ry="30" fill="${hillColor3}" opacity=".4"/>
+          <!-- buildings -->
+          <ellipse cx="200" cy="72" rx="35" ry="50" fill="${buildColor1}" opacity=".22"/>
+          <ellipse cx="240" cy="80" rx="22" ry="38" fill="${buildColor2}" opacity=".18"/>
+          <!-- ground fog at night/dusk -->
+          ${fogOp>0.1?`<rect x="0" y="100" width="300" height="30" fill="#fff" opacity="${fogOp}" rx="8"/>`:''}
+        </svg>`;
+      })()}
     </div>
   </div>
   <div class="accordion">
@@ -1001,26 +1065,57 @@ function renderDetail(app){
   const byDate={};
   entries.forEach(e=>{if(!byDate[e.date])byDate[e.date]=[];byDate[e.date].push(e);});
   const dates=Object.keys(byDate).sort((a,b)=>b.localeCompare(a));
+
+  // Group dates into weeks (Mon–Sun)
+  function getWeekStart(dateStr){
+    const d=new Date(dateStr+'T00:00:00');
+    const day=d.getDay(); // 0=Sun
+    const diff=day===0?-6:1-day; // shift to Monday
+    const mon=new Date(d);mon.setDate(d.getDate()+diff);
+    return mon.toISOString().slice(0,10);
+  }
+  function getWeekEnd(weekStart){
+    const d=new Date(weekStart+'T00:00:00');d.setDate(d.getDate()+6);return d.toISOString().slice(0,10);
+  }
+  function fmtShort(dateStr){
+    const d=new Date(dateStr+'T00:00:00');
+    return d.toLocaleDateString(undefined,{month:'short',day:'numeric'});
+  }
+  const weekMap={};
+  dates.forEach(d=>{const ws=getWeekStart(d);if(!weekMap[ws])weekMap[ws]=[];weekMap[ws].push(d);});
+  const weekStarts=Object.keys(weekMap).sort((a,b)=>b.localeCompare(a));
+
   const entriesHtml=dates.length===0?'<div class="empty-state">No entries yet this month.</div>'
-    :dates.map(d=>{
-      const de=byDate[d],dh=de.reduce((s,e)=>s+e.hours,0);
-      return `<div class="entry-group">
-        <div class="entry-date-hdr">
-          <span class="entry-date-lbl">${ic.calendar} ${fmtDate(d)}</span>
-          <span class="entry-date-sum"><span>${dh.toFixed(1)} hours</span><span style="color:var(--green)">${fmtMoney(dh*r)}</span></span>
+    :weekStarts.map((ws,wi)=>{
+      const we=getWeekEnd(ws);
+      const weekDates=weekMap[ws]; // already sorted desc
+      const weekHours=weekDates.reduce((s,d)=>s+byDate[d].reduce((s2,e)=>s2+e.hours,0),0);
+      const datesHtml=weekDates.map(d=>{
+        const de=byDate[d],dh=de.reduce((s,e)=>s+e.hours,0);
+        return `<div class="entry-group">
+          <div class="entry-date-hdr">
+            <span class="entry-date-lbl">${ic.calendar} ${fmtDate(d)}</span>
+            <span class="entry-date-sum"><span>${dh.toFixed(1)} hours</span><span style="color:var(--green)">${fmtMoney(dh*r)}</span></span>
+          </div>
+          ${[...de].reverse().map(e=>`<div class="entry-item">
+            <div>
+              <span class="entry-hrs">${e.hours}h</span><span class="entry-rev">${fmtMoney(e.hours*r)}</span>
+              ${e.desc?`<div class="entry-desc">${e.desc}</div>`:''}
+            </div>
+            <div class="entry-actions">
+              ${arch?'':`<button class="btn-ghost" onclick="copyEntryToToday('${c.id}','${e.id}')" title="Copy to today">${ic.copy}</button>`}
+              ${arch?'':`<button class="btn-ghost" onclick="openEditEntry('${c.id}','${e.id}')">${ic.edit}</button>`}
+              ${arch?'':`<button class="btn-ghost" onclick="deleteEntry('${c.id}','${e.id}')">${ic.trash}</button>`}
+            </div>
+          </div>`).join('')}
+        </div>`;
+      }).join('');
+      return `${wi>0?'<div style="height:1px;background:var(--border);margin:14px 0"></div>':''}
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <span style="font-size:14px;font-weight:800;color:var(--text)">Week of ${fmtShort(ws)} – ${fmtShort(we)}</span>
+          <span style="font-size:12px;font-weight:600;color:var(--text-secondary)">${weekHours.toFixed(1)}h</span>
         </div>
-        ${[...de].reverse().map(e=>`<div class="entry-item">
-          <div>
-            <span class="entry-hrs">${e.hours}h</span><span class="entry-rev">${fmtMoney(e.hours*r)}</span>
-            ${e.desc?`<div class="entry-desc">${e.desc}</div>`:''}
-          </div>
-          <div class="entry-actions">
-            ${arch?'':`<button class="btn-ghost" onclick="copyEntryToToday('${c.id}','${e.id}')" title="Copy to today">${ic.copy}</button>`}
-            ${arch?'':`<button class="btn-ghost" onclick="openEditEntry('${c.id}','${e.id}')">${ic.edit}</button>`}
-            ${arch?'':`<button class="btn-ghost" onclick="deleteEntry('${c.id}','${e.id}')">${ic.trash}</button>`}
-          </div>
-        </div>`).join('')}
-      </div>`;
+        ${datesHtml}`;
     }).join('');
 
   app.innerHTML=`
@@ -1041,7 +1136,6 @@ function renderDetail(app){
   ${tBar}
   <div class="stats-grid" style="margin-bottom:1.5rem">
     <div class="stat-card" onclick="S.modal={type:'custweek',cid:'${c.id}'};render()" style="cursor:pointer" title="Click to see daily breakdown"><div><div class="s-label">Hours this month</div><div class="s-value">${h.toFixed(1)}</div><div class="s-label" style="margin-top:10px">This week</div><div class="s-value">${weekHoursForCustomer(c.id).toFixed(1)}h</div></div><div class="stat-icon" style="background:#e3edf6;color:#1860a8">${ic.clock}</div></div>
-    <div class="stat-card"><div><div class="s-label">Revenue this month</div><div class="s-value" style="font-size:15px">${fmtMoney(rev)}</div></div><div class="stat-icon" style="background:#f0fdf4;color:#16a34a">${ic.dollar}</div></div>
     ${arch?`<div class="stat-card"><div><div class="s-label">Hourly rate</div><div class="s-value" style="font-size:15px">${fmtMoney(r)}/hr</div></div><div class="stat-icon" style="background:#e3edf6;color:#1860a8">${ic.dollar}</div></div>`
     :(()=>{const _sr=getSR(c.id,S.year,S.month);return `<div class="stat-card" onclick="openStatusReport('${c.id}')" style="cursor:pointer" title="Open Status Report"><div><div class="s-label">Status Report</div><div class="s-value" style="font-size:13px;margin-top:4px;color:${_sr.submitted?'var(--green)':'var(--text-hint)'}">${_sr.submitted?'✓ Submitted':'Not Submitted'}</div></div><div class="stat-icon" style="background:${_sr.submitted?'#f0fdf4':'var(--bg)'};color:${_sr.submitted?'var(--green)':'var(--text-secondary)'}"><svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div></div>`;})()} 
   </div>
