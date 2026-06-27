@@ -752,7 +752,16 @@ function renderDashboard(app){
       <div class="acc-chev open" id="chev-dash"><svg class="ic" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg></div>
     </div>
     <div class="acc-body ${S.accOpen.dash?"open":""}" id="body-dash">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.5rem">
+      <div class="section-card" style="margin-bottom:1.5rem">
+        <div class="section-header" style="margin-bottom:1rem">
+          <span style="font-weight:500">Monthly progress</span>
+          <span style="font-size:13px;color:var(--text-secondary)">${th.toFixed(1)} / ${goal} hours (${pct.toFixed(1)}%)</span>
+        </div>
+        <div class="progress-wrap"><div class="progress-bar" style="width:${pct}%;background:${pColor(pct)}"></div></div>
+        <div class="progress-labels"><span>0h</span><span>${goal}h target</span></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:0">
         <div class="stat-card" style="cursor:pointer" onclick="openWeekModal()">
           <div style="min-width:0;flex:1">
             <div class="s-label">Total hours</div>
@@ -770,15 +779,6 @@ function renderDashboard(app){
           </div>
           <div class="stat-icon" style="background:#f0fdf4;color:#16a34a">${ic.dollar}</div>
         </div>
-      </div>
-
-      <div class="section-card" style="margin-bottom:0">
-        <div class="section-header" style="margin-bottom:1rem">
-          <span style="font-weight:500">Monthly progress</span>
-          <span style="font-size:13px;color:var(--text-secondary)">${th.toFixed(1)} / ${goal} hours (${pct.toFixed(1)}%)</span>
-        </div>
-        <div class="progress-wrap"><div class="progress-bar" style="width:${pct}%;background:${pColor(pct)}"></div></div>
-        <div class="progress-labels"><span>0h</span><span>${goal}h target</span></div>
       </div>
     </div>
   </div>
@@ -1038,13 +1038,13 @@ function renderDetail(app){
       ${arch?'':`<button class="btn-secondary" onclick="openEditCustomer('${c.id}')">${ic.edit} Edit</button>`}
     </div>
   </div>
+  ${tBar}
   <div class="stats-grid" style="margin-bottom:1.5rem">
     <div class="stat-card" onclick="S.modal={type:'custweek',cid:'${c.id}'};render()" style="cursor:pointer" title="Click to see daily breakdown"><div><div class="s-label">Hours this month</div><div class="s-value">${h.toFixed(1)}</div><div class="s-label" style="margin-top:10px">This week</div><div class="s-value">${weekHoursForCustomer(c.id).toFixed(1)}h</div></div><div class="stat-icon" style="background:#e3edf6;color:#1860a8">${ic.clock}</div></div>
     <div class="stat-card"><div><div class="s-label">Revenue this month</div><div class="s-value" style="font-size:15px">${fmtMoney(rev)}</div></div><div class="stat-icon" style="background:#f0fdf4;color:#16a34a">${ic.dollar}</div></div>
     ${arch?`<div class="stat-card"><div><div class="s-label">Hourly rate</div><div class="s-value" style="font-size:15px">${fmtMoney(r)}/hr</div></div><div class="stat-icon" style="background:#e3edf6;color:#1860a8">${ic.dollar}</div></div>`
     :(()=>{const _sr=getSR(c.id,S.year,S.month);return `<div class="stat-card" onclick="openStatusReport('${c.id}')" style="cursor:pointer" title="Open Status Report"><div><div class="s-label">Status Report</div><div class="s-value" style="font-size:13px;margin-top:4px;color:${_sr.submitted?'var(--green)':'var(--text-hint)'}">${_sr.submitted?'✓ Submitted':'Not Submitted'}</div></div><div class="stat-icon" style="background:${_sr.submitted?'#f0fdf4':'var(--bg)'};color:${_sr.submitted?'var(--green)':'var(--text-secondary)'}"><svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div></div>`;})()} 
   </div>
-  ${tBar}
   ${renderTimerBar(c.id,arch)}
   <div class="section-card">
     <div class="section-header">
