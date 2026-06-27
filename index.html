@@ -2244,11 +2244,12 @@ function ptoPickDay(which,dateStr){
 
 function ptoAddContact(cid){const cd=ptoGetCust(cid);cd.contacts.push('');savePTO();render();}
 function ptoRemoveContact(cid,i){const cd=ptoGetCust(cid);cd.contacts.splice(i,1);savePTO();render();}
-function ptoSetContact(cid,i,v){ptoGetCust(cid).contacts[i]=v;savePTO();}
+function ptoSetContact(cid,i,v){ptoGetCust(cid).contacts[i]=v;savePTO();ptolivePreview(cid);}
 function ptoAddBackup(cid){const cd=ptoGetCust(cid);cd.backups.push('');savePTO();render();}
 function ptoRemoveBackup(cid,i){const cd=ptoGetCust(cid);cd.backups.splice(i,1);savePTO();render();}
-function ptoSetBackup(cid,i,v){ptoGetCust(cid).backups[i]=v;savePTO();}
-function ptoSaveRow(btnId,saveFn){saveFn();const btn=document.getElementById(btnId);if(btn){btn.textContent='Saved ✓';btn.classList.add('saved');setTimeout(()=>{btn.textContent='Save';btn.classList.remove('saved');},1600);}}
+function ptoSetBackup(cid,i,v){ptoGetCust(cid).backups[i]=v;savePTO();ptolivePreview(cid);}
+function ptolivePreview(cid){const el=document.getElementById('pto-email-preview-'+cid);if(el){const t=buildCustomerEmail(cid);el.textContent=t;}}
+function ptoSaveRow(btnId,saveFn,cid){saveFn();if(cid)ptolivePreview(cid);const btn=document.getElementById(btnId);if(btn){btn.textContent='Saved ✓';btn.classList.add('saved');setTimeout(()=>{btn.textContent='Save';btn.classList.remove('saved');},1600);}}
 function modalSaveContact(i,inputId,btnId){const inp=document.getElementById(inputId);if(inp)S._modalContacts[i]=inp.value;const btn=document.getElementById(btnId);if(btn){btn.textContent='Saved ✓';btn.classList.add('saved');setTimeout(()=>{btn.textContent='Save';btn.classList.remove('saved');},1600);}}
 function modalSaveBackup(i,inputId,btnId){const inp=document.getElementById(inputId);if(inp)S._modalBackups[i]=inp.value;const btn=document.getElementById(btnId);if(btn){btn.textContent='Saved ✓';btn.classList.add('saved');setTimeout(()=>{btn.textContent='Save';btn.classList.remove('saved');},1600);}}
 
@@ -2307,9 +2308,17 @@ function buildCustomerEmail(cid){
   const from=fmtPTODate(inst.dateFrom)||'[start date]';
   const until=fmtPTODate(inst.dateUntil)||'[end date]';
   const allContacts=(cd.contacts||[]).filter(e=>e&&e.trim());
-  function extractFirstName(email){const m=email.match(/^([a-zA-Z]+)[.@]/);if(m)return m[1].charAt(0).toUpperCase()+m[1].slice(1).toLowerCase();const w=email.trim().split(/\s+/)[0];return w.charAt(0).toUpperCase()+w.slice(1).toLowerCase();}
+  function extractFirstName(contact){
+    const t=contact.trim();
+    // If it looks like an email, grab the part before . or @
+    if(t.includes('@')){const m=t.match(/^([a-zA-Z]+)[.@]/);if(m)return m[1].charAt(0).toUpperCase()+m[1].slice(1).toLowerCase();}
+    // Otherwise treat as a name — return the first word
+    const w=t.split(/\s+/)[0];return w.charAt(0).toUpperCase()+w.slice(1).toLowerCase();
+  }
   const contactNames=allContacts.length?allContacts.map(extractFirstName):['[Customer Name]'];
-  const greeting=contactNames.length>1?contactNames.slice(0,-1).join(', ')+' & '+contactNames[contactNames.length-1]:contactNames[0];
+  const greeting=contactNames.length===1
+    ?contactNames[0]
+    :contactNames.slice(0,-1).join(', ')+' & '+contactNames[contactNames.length-1];
   const bups=(cd.backups||[]).filter(b=>b&&b.trim());
   const primaryBackup=bups[0]||'[backup name]';
   const allBackups=bups;
@@ -2440,7 +2449,7 @@ function renderPTOCustomerDetail(c){
         <div class="contacts-list">${contactRows||'<div style="font-size:13px;color:var(--text-hint);padding:4px 0">No contacts added yet.</div>'}</div>
         <div style="display:flex;gap:8px;margin-top:4px">
           <button class="btn-add-contact" style="flex:1;margin-top:0" onclick="ptoAddContact('${c.id}')">+ Add customer contact</button>
-          <button class="btn-save-row" id="pto-cont-save-${c.id}" onclick="ptoSaveRow('pto-cont-save-${c.id}',()=>savePTO())">Save</button>
+          <button class="btn-save-row" id="pto-cont-save-${c.id}" onclick="ptoSaveRow('pto-cont-save-${c.id}',()=>savePTO(),'${c.id}')">Save</button>
         </div>
       </div>
     </div>
@@ -2453,7 +2462,7 @@ function renderPTOCustomerDetail(c){
         <div class="contacts-list">${backupRows||'<div style="font-size:13px;color:var(--text-hint);padding:4px 0">No back ups added yet.</div>'}</div>
         <div style="display:flex;gap:8px;margin-top:4px">
           <button class="btn-add-contact" style="flex:1;margin-top:0" onclick="ptoAddBackup('${c.id}')">+ Add back up</button>
-          <button class="btn-save-row" id="pto-bup-save-${c.id}" onclick="ptoSaveRow('pto-bup-save-${c.id}',()=>savePTO())">Save</button>
+          <button class="btn-save-row" id="pto-bup-save-${c.id}" onclick="ptoSaveRow('pto-bup-save-${c.id}',()=>savePTO(),'${c.id}')">Save</button>
         </div>
       </div>
     </div>
@@ -2468,7 +2477,7 @@ function renderPTOCustomerDetail(c){
     </div>
     <div class="section-card">
       <div class="section-header" style="margin-bottom:0.5rem"><h2 style="font-size:15px">Customer Email</h2></div>
-      <div class="manager-email-box" style="font-size:12px">${emailPreview.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+      <div class="manager-email-box" id="pto-email-preview-${c.id}" style="font-size:12px">${emailPreview.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
       <button class="btn-copy-email" id="btn-copy-cust-${c.id}" onclick="copyText(buildCustomerEmail('${c.id}'),'btn-copy-cust-${c.id}')">${ic.copy} Copy email</button>
     </div>`;
 }
