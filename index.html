@@ -306,6 +306,19 @@ svg.ic{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;str
 <body>
 <div id="app"></div>
 <script>
+// --- SECURITY PATCH ---
+// Safely escapes HTML characters to prevent Cross-Site Scripting (XSS)
+function esc(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+// ----------------------
+
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 const QUICK=[0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8];
 const SK={C:'bht_customers',A:'bht_archived',E:'bht_entries',S:'bht_settings'};
@@ -363,11 +376,11 @@ let S={
     instances:[],       
     activeInstance:0,
     _mgrEmailOpen:false,
-    _collOpen:{} // Tracks open/closed states for collapsibles
+    _collOpen:{}
   },
   _modalContacts:[],
   _modalBackups:[],
-  statusReports:{} // { "cid::YYYY-MM": { text: "", submitted: false } }
+  statusReports:{}
 };
 
 function load(){
@@ -593,14 +606,14 @@ function renderIncomeChart(){
   }
 
   const dots=points.map(p=>{
-    const safeLabel=p.m.label.replace(/'/g,"\\'");
-    const safeWork=p.m.workLabel.replace(/'/g,"\\'");
-    const value=fmtMoney(p.m.total).replace(/'/g,"\\'");
+    const safeLabel=esc(p.m.label);
+    const safeWork=esc(p.m.workLabel);
+    const value=esc(fmtMoney(p.m.total));
     return `<circle cx="${p.x}" cy="${p.y}" r="4.5" fill="var(--green)" stroke="var(--surface)" stroke-width="2" style="cursor:pointer"
         onmousemove="chartTooltip(event,'Paid in ${safeLabel}','${value}')"
         onmouseleave="hideChartTooltip()"></circle>
-      <text x="${p.x}" y="${chartH+topPad+22}" text-anchor="middle" font-size="12" fill="var(--text-secondary)" font-family="'DM Sans',sans-serif">${p.m.label}</text>
-      ${p.m.total>0?`<text x="${p.x}" y="${Math.max(p.y-10,12)}" text-anchor="middle" font-size="11" font-weight="600" fill="var(--text)" font-family="'DM Sans',sans-serif">${fmtMoney(p.m.total)}</text>`:''}`;
+      <text x="${p.x}" y="${chartH+topPad+22}" text-anchor="middle" font-size="12" fill="var(--text-secondary)" font-family="'DM Sans',sans-serif">${safeLabel}</text>
+      ${p.m.total>0?`<text x="${p.x}" y="${Math.max(p.y-10,12)}" text-anchor="middle" font-size="11" font-weight="600" fill="var(--text)" font-family="'DM Sans',sans-serif">${value}</text>`:''}`;
   }).join('');
 
   let gridLines='';
@@ -643,7 +656,7 @@ function renderAnalyticsChart(){
     m.segments.forEach(seg=>{
       const segH=(seg.hours/niceMax)*chartH;
       const y=yCursor-segH;
-      const safeName=seg.name.replace(/'/g,"\\'");
+      const safeName=esc(seg.name);
       segHtml+=`<rect x="${x}" y="${y}" width="${barW}" height="${segH}" fill="${colorForCustomer(seg.cid)}" rx="2" style="cursor:pointer"
         onmousemove="chartTooltip(event,'${safeName}','${seg.hours.toFixed(1)}h')"
         onmouseleave="hideChartTooltip()"></rect>`;
@@ -667,7 +680,7 @@ function renderAnalyticsChart(){
 
   const legendHtml=legend.length===0?'<span style="font-size:13px;color:var(--text-hint)">No data in this period</span>':
     legend.map(l=>`<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);margin-right:14px;margin-bottom:6px">
-      <span style="width:10px;height:10px;border-radius:3px;background:${colorForCustomer(l.cid)};display:inline-block"></span>${l.name}
+      <span style="width:10px;height:10px;border-radius:3px;background:${colorForCustomer(l.cid)};display:inline-block"></span>${esc(l.name)}
     </span>`).join('');
 
   return `
@@ -731,28 +744,20 @@ function renderDashboard(app){
     <div class="hero-banner-art">
       ${(()=>{
         const hr=new Date().getHours();
-        // Time periods: night 0-5, dawn 5-7, morning 7-11, midday 11-14, afternoon 14-17, dusk 17-20, evening 20-22, night 22-24
         let sky1,sky2,sunX,sunY,sunR,sunColor,sunGlow,showMoon,starOp,cloudOp,hillColor1,hillColor2,hillColor3,buildColor1,buildColor2,fogOp;
         if(hr>=5&&hr<7){
-          // Dawn — pink/orange sky, sun rising low
           sky1='#f9c784';sky2='#fde9c9';sunX=60;sunY=100;sunR=18;sunColor='#ff9f43';sunGlow='#ffcc80';showMoon=false;starOp=0;cloudOp='.35';hillColor1='#5a9e5a';hillColor2='#4a8a4a';hillColor3='#3a723a';buildColor1='#7a9ab8';buildColor2='#6080a0';fogOp='.18';
         } else if(hr>=7&&hr<11){
-          // Morning — bright blue sky, sun mid-low
           sky1='#a8d8f0';sky2='#d4edf8';sunX=80;sunY=45;sunR=15;sunColor='#ffe566';sunGlow='#fff0a0';showMoon=false;starOp=0;cloudOp='.6';hillColor1='#6aaf6a';hillColor2='#558b55';hillColor3='#4a7c4a';buildColor1='#8fa8c8';buildColor2='#7090b8';fogOp='.08';
         } else if(hr>=11&&hr<14){
-          // Midday — bright sky, sun high
           sky1='#7ec8e3';sky2='#c4e8f5';sunX=150;sunY=22;sunR=17;sunColor='#fff176';sunGlow='#fffde7';showMoon=false;starOp=0;cloudOp='.7';hillColor1='#72b872';hillColor2='#5e9e5e';hillColor3='#508050';buildColor1='#90aac8';buildColor2='#7292ba';fogOp='.05';
         } else if(hr>=14&&hr<17){
-          // Afternoon — slightly warmer sky, sun past peak
           sky1='#c7d9f8';sky2='#dce8ff';sunX=230;sunY=28;sunR=16;sunColor='#ffe082';sunGlow='#fff3c0';showMoon=false;starOp=0;cloudOp='.55';hillColor1='#6aaf6a';hillColor2='#558b55';hillColor3='#4a7c4a';buildColor1='#8fa8c8';buildColor2='#7090b8';fogOp='.08';
         } else if(hr>=17&&hr<20){
-          // Dusk — golden/orange sky, sun setting on horizon
           sky1='#f4a340';sky2='#f9d08a';sunX=260;sunY=95;sunR=20;sunColor='#ff7043';sunGlow='#ff8a65';showMoon=false;starOp=0;cloudOp='.4';hillColor1='#3d6b3d';hillColor2='#2e5430';hillColor3='#243e24';buildColor1='#4a5f78';buildColor2='#384a60';fogOp='.22';
         } else if(hr>=20&&hr<22){
-          // Evening — deep blue/purple, moon rising
           sky1='#2c3e6e';sky2='#4a5a8a';sunX=230;sunY=30;sunR=12;sunColor='#e8eaf6';sunGlow='#c5cae9';showMoon=true;starOp=.5;cloudOp='.15';hillColor1='#2a4a2a';hillColor2='#1e381e';hillColor3='#162a16';buildColor1='#2a3a50';buildColor2='#1e2c3e';fogOp='.3';
         } else {
-          // Night — dark sky, moon high, stars
           sky1='#0f1f4a';sky2='#1a2d5e';sunX=200;sunY=25;sunR=13;sunColor='#e8eaf6';sunGlow='#9fa8da';showMoon=true;starOp=.9;cloudOp='.08';hillColor1='#1a2e1a';hillColor2='#122212';hillColor3='#0e1a0e';buildColor1='#18263a';buildColor2='#101c2c';fogOp='.35';
         }
         const isNight=hr>=20||hr<5,isDusk=hr>=17&&hr<20,isDawn=hr>=5&&hr<7;
@@ -779,29 +784,22 @@ function renderDashboard(app){
             <circle cx="40"  cy="30" r=".7"  fill="#fff" opacity="${starOp*.5}"/>
             <circle cx="110" cy="32" r=".8"  fill="#fff" opacity="${starOp*.65}"/>
           `:''}
-          <!-- sun glow halo -->
           <ellipse cx="${sunX}" cy="${sunY}" rx="${sunR*2.2}" ry="${sunR*2.2}" fill="url(#sunglow)"/>
           ${showMoon
-            ?`<!-- moon with crater detail -->
-              <circle cx="${sunX}" cy="${sunY}" r="${sunR}" fill="${sunColor}" opacity=".92"/>
+            ?`<circle cx="${sunX}" cy="${sunY}" r="${sunR}" fill="${sunColor}" opacity=".92"/>
               <circle cx="${sunX+4}" cy="${sunY-3}" r="${sunR*.35}" fill="${sky1}" opacity=".4"/>
               <circle cx="${sunX-3}" cy="${sunY+4}" r="${sunR*.22}" fill="${sky1}" opacity=".3"/>`
-            :`<!-- sun -->
-              <circle cx="${sunX}" cy="${sunY}" r="${sunR}" fill="${sunColor}" opacity=".9"/>`
+            :`<circle cx="${sunX}" cy="${sunY}" r="${sunR}" fill="${sunColor}" opacity=".9"/>`
           }
-          <!-- clouds -->
           <ellipse cx="165" cy="38" rx="42" ry="13" fill="#fff" opacity="${cloudOp}"/>
           <ellipse cx="195" cy="32" rx="28" ry="10" fill="#fff" opacity="${cloudOp}"/>
           <ellipse cx="60"  cy="28" rx="30" ry="10" fill="#fff" opacity="${parseFloat(cloudOp)*.7}"/>
           <ellipse cx="82"  cy="22" rx="20" ry="8"  fill="#fff" opacity="${parseFloat(cloudOp)*.6}"/>
-          <!-- hills -->
           <ellipse cx="150" cy="100" rx="90" ry="38" fill="${hillColor1}" opacity=".5"/>
           <ellipse cx="265" cy="110" rx="55" ry="28" fill="${hillColor2}" opacity=".45"/>
           <ellipse cx="80"  cy="115" rx="70" ry="30" fill="${hillColor3}" opacity=".4"/>
-          <!-- buildings -->
           <ellipse cx="200" cy="72" rx="35" ry="50" fill="${buildColor1}" opacity=".22"/>
           <ellipse cx="240" cy="80" rx="22" ry="38" fill="${buildColor2}" opacity=".18"/>
-          <!-- ground fog at night/dusk -->
           ${fogOp>0.1?`<rect x="0" y="100" width="300" height="30" fill="#fff" opacity="${fogOp}" rx="8"/>`:''}
         </svg>`;
       })()}
@@ -924,7 +922,7 @@ function renderDashboard(app){
         <p class="sec-label">Profile</p>
         <div class="field" style="max-width:260px;margin-bottom:1rem">
           <label>Your name</label>
-          <input id="s-name" type="text" value="${S.cfg.userName||''}" placeholder="" oninput="liveCfg()">
+          <input id="s-name" type="text" value="${esc(S.cfg.userName||'')}" placeholder="" oninput="liveCfg()">
           <div class="field-hint">Used in the greeting banner</div>
         </div>
         <p class="sec-label">Billing</p>
@@ -1031,8 +1029,8 @@ function renderCCard(c){
   return `<div class="customer-card${arch?' archived-card':''}" onclick="openDetail('${c.id}')">
     ${arch?'':`<button class="card-x" onclick="event.stopPropagation();archiveCustomer('${c.id}')" title="Remove">&#x2715;</button>`}
     <div class="c-name-row">
-      ${c.logo?`<img class="c-logo" src="${c.logo}" alt="${c.name}">`:`<div class="c-dot${arch?' archived':''}" style="${arch?'':`background:${colorForCustomer(c.id)}`}"></div>`}
-      <span class="c-name">${c.name}</span>
+      ${c.logo?`<img class="c-logo" src="${c.logo}" alt="${esc(c.name)}">`:`<div class="c-dot${arch?' archived':''}" style="${arch?'':`background:${colorForCustomer(c.id)}`}"></div>`}
+      <span class="c-name">${esc(c.name)}</span>
       ${arch?'<span class="badge-archived">Archived</span>':''}
       ${(S.timers&&S.timers[c.id]&&S.timers[c.id].running)?'<span class="timer-dot" title="Timer running"></span>':''}
     </div>
@@ -1066,11 +1064,10 @@ function renderDetail(app){
   entries.forEach(e=>{if(!byDate[e.date])byDate[e.date]=[];byDate[e.date].push(e);});
   const dates=Object.keys(byDate).sort((a,b)=>b.localeCompare(a));
 
-  // Group dates into weeks (Mon–Sun)
   function getWeekStart(dateStr){
     const d=new Date(dateStr+'T00:00:00');
-    const day=d.getDay(); // 0=Sun
-    const diff=day===0?-6:1-day; // shift to Monday
+    const day=d.getDay(); 
+    const diff=day===0?-6:1-day; 
     const mon=new Date(d);mon.setDate(d.getDate()+diff);
     return mon.toISOString().slice(0,10);
   }
@@ -1088,7 +1085,7 @@ function renderDetail(app){
   const entriesHtml=dates.length===0?'<div class="empty-state">No entries yet this month.</div>'
     :weekStarts.map((ws,wi)=>{
       const we=getWeekEnd(ws);
-      const weekDates=weekMap[ws]; // already sorted desc
+      const weekDates=weekMap[ws];
       const weekHours=weekDates.reduce((s,d)=>s+byDate[d].reduce((s2,e)=>s2+e.hours,0),0);
       const datesHtml=weekDates.map(d=>{
         const de=byDate[d],dh=de.reduce((s,e)=>s+e.hours,0);
@@ -1100,7 +1097,7 @@ function renderDetail(app){
           ${[...de].reverse().map(e=>`<div class="entry-item">
             <div>
               <span class="entry-hrs">${e.hours}h</span><span class="entry-rev">${fmtMoney(e.hours*r)}</span>
-              ${e.desc?`<div class="entry-desc">${e.desc}</div>`:''}
+              ${e.desc?`<div class="entry-desc">${esc(e.desc)}</div>`:''}
             </div>
             <div class="entry-actions">
               ${arch?'':`<button class="btn-ghost" onclick="copyEntryToToday('${c.id}','${e.id}')" title="Copy to today">${ic.copy}</button>`}
@@ -1123,8 +1120,8 @@ function renderDetail(app){
   <div class="detail-header">
     <button class="btn-secondary" onclick="goBack()">${ic.back} Back</button>
     <div class="detail-title">
-      ${c.logo?`<img class="c-logo" src="${c.logo}" alt="${c.name}" style="width:36px;height:36px">`:`<div class="c-dot${arch?' archived':''}" style="${arch?'':`background:${colorForCustomer(c.id)}`}"></div>`}
-      ${c.name}
+      ${c.logo?`<img class="c-logo" src="${c.logo}" alt="${esc(c.name)}" style="width:36px;height:36px">`:`<div class="c-dot${arch?' archived':''}" style="${arch?'':`background:${colorForCustomer(c.id)}`}"></div>`}
+      ${esc(c.name)}
       ${arch?'<span class="badge-archived">Archived</span>':''}
       <span class="detail-month">&middot; ${MONTHS[S.month]} ${S.year}</span>
     </div>
@@ -1164,17 +1161,17 @@ function renderModal(app){
     }
     const contactRows=S._modalContacts.map((v,i)=>`
       <div class="contact-row" style="margin-bottom:6px">
-        <input id="mcont-${i}" type="text" placeholder="contact@customer.com" value="${v||''}" oninput="S._modalContacts[${i}]=this.value">
+        <input id="mcont-${i}" type="text" placeholder="contact@customer.com" value="${esc(v||'')}" oninput="S._modalContacts[${i}]=this.value">
         ${S._modalContacts.length>1?`<button class="btn-rm-backup" onclick="S._modalContacts.splice(${i},1);S.modal._init=true;render()">&#x2715;</button>`:''}
       </div>`).join('');
     const backupRows=S._modalBackups.map((v,i)=>`
       <div class="contact-row" style="margin-bottom:6px">
-        <input id="mbup-${i}" type="text" placeholder="Back up ${i+1} name" value="${v||''}" oninput="S._modalBackups[${i}]=this.value">
+        <input id="mbup-${i}" type="text" placeholder="Back up ${i+1} name" value="${esc(v||'')}" oninput="S._modalBackups[${i}]=this.value">
         ${S._modalBackups.length>1?`<button class="btn-rm-backup" onclick="S._modalBackups.splice(${i},1);S.modal._init=true;render()">&#x2715;</button>`:''}
       </div>`).join('');
     inner=`<div class="modal">
       <div class="modal-header"><h2>${m.id?'Edit customer':'Add customer'}</h2><button class="btn-ghost" onclick="closeModal()">${ic.x}</button></div>
-      <div class="field"><label>Customer name</label><input id="m-name" type="text" value="${c.name||''}" placeholder="Customer name"></div>
+      <div class="field"><label>Customer name</label><input id="m-name" type="text" value="${esc(c.name||'')}" placeholder="Customer name"></div>
       <div class="field"><label>Monthly hours target (optional)</label><input id="m-target" type="number" value="${c.target||''}" min="0" placeholder="e.g. 10 — leave blank if none"></div>
       <div class="field"><label>Analytics colour</label>
         <div style="display:flex;align-items:center;gap:10px">
@@ -1216,13 +1213,13 @@ function renderModal(app){
     const monthLabel=MONTHS[S.month]+' '+S.year;
     inner=`<div class="modal" style="max-width:520px">
       <div class="modal-header">
-        <h2>Status Report · ${c?c.name:''}</h2>
+        <h2>Status Report · ${c?esc(c.name):''}</h2>
         <button class="btn-ghost" onclick="closeModal()">${ic.x}</button>
       </div>
       <div style="font-size:12px;color:var(--text-hint);margin-bottom:10px">${monthLabel}</div>
       <div class="field">
         <label>Status report</label>
-        <textarea id="sr-text" style="height:180px;font-size:14px;line-height:1.6;resize:vertical" placeholder="Write your monthly status report here...">${(sr.text||'').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea>
+        <textarea id="sr-text" style="height:180px;font-size:14px;line-height:1.6;resize:vertical" placeholder="Write your monthly status report here...">${esc(sr.text||'')}</textarea>
       </div>
       <div style="display:flex;gap:8px;margin-top:4px">
         <button class="btn-secondary" onclick="srCopy('${m.cid}')" style="flex:1;padding:9px">
@@ -1262,7 +1259,7 @@ function renderModal(app){
     }
     inner=`<div class="modal">
       <div class="modal-header"><h2>${m.eid?'Edit time entry':'Add time entry'}</h2><button class="btn-ghost" onclick="closeModal()">${ic.x}</button></div>
-      <div class="field"><label>Customer</label><div class="cpill"><div class="c-dot" style="background:${colorForCustomer(c.id)}"></div>${c.name} &middot; ${fmtMoney(r)}/hr</div></div>
+      <div class="field"><label>Customer</label><div class="cpill"><div class="c-dot" style="background:${colorForCustomer(c.id)}"></div>${esc(c.name)} &middot; ${fmtMoney(r)}/hr</div></div>
       <div class="field"><label>Date</label>
         <div style="display:flex;gap:4px;margin-bottom:8px">${dayBtns}</div>
         <input id="m-date" type="date" value="${entry.date||today()}">
@@ -1275,7 +1272,7 @@ function renderModal(app){
         </div>
         <div class="quick-grid">${QUICK.map(q=>`<button class="quick-btn${h===q?' active':''}" onclick="setH(${q})">${q}h</button>`).join('')}</div>
       </div>
-      <div class="field"><label>Description (optional)</label><textarea id="m-desc" placeholder="What did you work on?">${entry.desc||(m.fromTimer?S._timerComment:'')||''}</textarea></div>
+      <div class="field"><label>Description (optional)</label><textarea id="m-desc" placeholder="What did you work on?">${esc(entry.desc||(m.fromTimer?S._timerComment:'')||'')}</textarea></div>
       <div class="modal-actions">
         <button class="btn-cancel-m" onclick="closeModal()">Cancel</button>
         ${m.eid?'':`<button class="btn-secondary" style="margin-right:auto" onclick="saveEntry('${m.cid}','',true)">Save &amp; add another</button>`}
@@ -1359,7 +1356,7 @@ function renderModal(app){
       </div>`;
     }
     inner=`<div class="modal">
-      <div class="modal-header"><h2>${c.name} — This week</h2><button class="btn-ghost" onclick="closeModal()">${ic.x}</button></div>
+      <div class="modal-header"><h2>${esc(c.name)} — This week</h2><button class="btn-ghost" onclick="closeModal()">${ic.x}</button></div>
       <div class="field">
         <label>Billable hours logged this week — ${weekTotal.toFixed(1)}h</label>
         <div style="margin-top:6px">${weekRows}</div>
@@ -1548,7 +1545,7 @@ function chartTooltip(evt,name,hoursLabel){
     t.style.cssText='position:fixed;pointer-events:none;background:var(--text);color:var(--surface);padding:6px 10px;border-radius:8px;font-size:12px;font-weight:500;z-index:300;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,0.2);transition:opacity 0.1s';
     document.body.appendChild(t);
   }
-  t.innerHTML=`<strong>${name}</strong> &middot; ${hoursLabel}`;
+  t.innerHTML=`<strong>${esc(name)}</strong> &middot; ${esc(hoursLabel)}`;
   t.style.opacity='1';
   const offset=14;
   let left=evt.clientX+offset,top=evt.clientY+offset;
@@ -1570,7 +1567,7 @@ function showToast(msg){
     t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--surface);padding:10px 18px;border-radius:99px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px;z-index:200;opacity:0;transition:opacity 0.25s,transform 0.25s;box-shadow:0 4px 12px rgba(0,0,0,0.2)';
     document.body.appendChild(t);
   }
-  t.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>'+msg+'</span>';
+  t.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>'+esc(msg)+'</span>';
   requestAnimationFrame(()=>{t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';});
   clearTimeout(window._toastTimer);
   window._toastTimer=setTimeout(()=>{
@@ -1643,7 +1640,6 @@ function saveCustomer(id){
     S.active.push({id:savedId,name,target,color,contacts,backups,logo:_pendingLogo||null});
   }
 
-  // Sync into every PTO instance (One-way sync without duplicates)
   S.pto.instances.forEach(inst=>{
     if(!inst.customers[savedId]) inst.customers[savedId]={contacts:[],backups:[],checks:{accessConfirmed:false,backupNotified:false,handoverCompleted:false,customerNotified:false,eamUpdated:false,calendarUpdated:false}};
     const cd=inst.customers[savedId];
@@ -1673,7 +1669,6 @@ function saveEntry(cid,eid,keepOpen){
   if(eid){
     const oldArr=getE(cid,S.year,S.month);
     const idx=oldArr.findIndex(e=>e.id===eid);
-    const existing=idx>=0?oldArr[idx]:null;
     if(idx>=0){oldArr.splice(idx,1);setE(cid,S.year,S.month,oldArr);}
     const targetArr=getE(cid,entryYear,entryMonth);
     targetArr.push({id:eid,date,hours,desc});
@@ -1777,7 +1772,7 @@ function renderTimerBar(cid,arch){
       <div class="timer-display${t.running?' running':''}" id="td-${cid}">${timerFmt(ms)}</div>
       <div style="font-size:11px;margin-top:2px" id="tbl-${cid}">${bl}</div>
     </div>
-    <input id="tc-${cid}" type="text" placeholder="What are you working on?" value="${comment.replace(/"/g,'&quot;')}"
+    <input id="tc-${cid}" type="text" placeholder="What are you working on?" value="${esc(comment)}"
       oninput="timerSetComment('${cid}',this.value)"
       style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--bg);color:var(--text)">
     <div style="display:flex;gap:6px">
@@ -1928,7 +1923,7 @@ function renderForgottenTimerOverlay(cid){
       <div style="font-size:32px;text-align:center;margin-bottom:12px">⏰</div>
       <h2 style="font-size:17px;font-weight:700;text-align:center;margin-bottom:8px">Are you still billing?</h2>
       <p style="font-size:13px;color:var(--text-secondary);text-align:center;line-height:1.5;margin-bottom:20px">
-        The timer for <strong>${name}</strong> has been running for 8 hours.<br>It may have been left on by accident.
+        The timer for <strong>${esc(name)}</strong> has been running for 8 hours.<br>It may have been left on by accident.
       </p>
       <div style="display:flex;flex-direction:column;gap:8px">
         <button onclick="forgottenKeepGoing('${cid}')" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:11px;font-size:14px;font-weight:600;cursor:pointer">Yes, still billing — keep going</button>
@@ -2310,9 +2305,7 @@ function buildCustomerEmail(cid){
   const allContacts=(cd.contacts||[]).filter(e=>e&&e.trim());
   function extractFirstName(contact){
     const t=contact.trim();
-    // If it looks like an email, grab the part before . or @
     if(t.includes('@')){const m=t.match(/^([a-zA-Z]+)[.@]/);if(m)return m[1].charAt(0).toUpperCase()+m[1].slice(1).toLowerCase();}
-    // Otherwise treat as a name — return the first word
     const w=t.split(/\s+/)[0];return w.charAt(0).toUpperCase()+w.slice(1).toLowerCase();
   }
   const contactNames=allContacts.length?allContacts.map(extractFirstName):['[Customer Name]'];
@@ -2381,10 +2374,10 @@ function renderPTOCustomerGrid(vc){
     const total=Object.values(cd.checks).length;
     const bups=(cd.backups||[]).filter(b=>b&&b.trim());
     const logoEl=c.logo
-      ?`<img src="${c.logo}" alt="${c.name}" style="width:28px;height:28px;border-radius:6px;object-fit:contain;border:1px solid var(--border);background:var(--bg);flex-shrink:0">`
+      ?`<img src="${c.logo}" alt="${esc(c.name)}" style="width:28px;height:28px;border-radius:6px;object-fit:contain;border:1px solid var(--border);background:var(--bg);flex-shrink:0">`
       :`<div class="c-dot" style="background:${colorForCustomer(c.id)}"></div>`;
     return `<div class="pto-cust-card" onclick="ptoOpenDetail('${c.id}')">
-      <div class="c-name-row">${logoEl}<span class="c-name">${c.name}</span></div>
+      <div class="c-name-row">${logoEl}<span class="c-name">${esc(c.name)}</span></div>
       <div class="c-row"><span class="c-lbl">Back ups</span><span class="c-val" style="font-size:12px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${bups.length?bups.join(', '):'—'}</span></div>
       <div class="c-row"><span class="c-lbl">Contacts</span><span class="c-val">${(cd.contacts||[]).filter(x=>x&&x.trim()).length||'—'}</span></div>
       <div class="c-row"><span class="c-lbl">Checklist</span><span class="c-val" style="color:${pct===100?'var(--green)':pct>0?'var(--amber)':'var(--text-hint)'}">${done}/${total}</span></div>
@@ -2419,17 +2412,17 @@ function renderPTOCustomerDetail(c){
 
   const contactRows=contacts.map((email,i)=>`
     <div class="contact-row">
-      <input id="pto-cont-${c.id}-${i}" type="text" placeholder="contact@customer.com" value="${email||''}" oninput="ptoSetContact('${c.id}',${i},this.value)">
+      <input id="pto-cont-${c.id}-${i}" type="text" placeholder="contact@customer.com" value="${esc(email||'')}" oninput="ptoSetContact('${c.id}',${i},this.value)">
       <button class="btn-rm-backup" onclick="ptoRemoveContact('${c.id}',${i})">&#x2715;</button>
     </div>`).join('');
   const backupRows=backups.map((b,i)=>`
     <div class="contact-row">
-      <input id="pto-bup-${c.id}-${i}" type="text" placeholder="Back up ${i+1} name" value="${b||''}" oninput="ptoSetBackup('${c.id}',${i},this.value)">
+      <input id="pto-bup-${c.id}-${i}" type="text" placeholder="Back up ${i+1} name" value="${esc(b||'')}" oninput="ptoSetBackup('${c.id}',${i},this.value)">
       <button class="btn-rm-backup" onclick="ptoRemoveBackup('${c.id}',${i})">&#x2715;</button>
     </div>`).join('');
   const emailPreview=buildCustomerEmail(c.id);
   const logoEl=c.logo
-    ?`<img src="${c.logo}" alt="${c.name}" style="width:32px;height:32px;border-radius:7px;object-fit:contain;border:1px solid var(--border);background:var(--bg)">`
+    ?`<img src="${c.logo}" alt="${esc(c.name)}" style="width:32px;height:32px;border-radius:7px;object-fit:contain;border:1px solid var(--border);background:var(--bg)">`
     :`<div class="c-dot" style="background:${colorForCustomer(c.id)}"></div>`;
   const contactCount=contacts.filter(e=>e&&e.trim()).length;
   const backupCount=backups.filter(b=>b&&b.trim()).length;
@@ -2437,7 +2430,7 @@ function renderPTOCustomerDetail(c){
   return `
     <div class="pto-detail-header">
       <button class="btn-secondary" onclick="ptoGoBack()">${ic.back} Back</button>
-      <div class="pto-detail-title">${logoEl}${c.name}</div>
+      <div class="pto-detail-title">${logoEl}${esc(c.name)}</div>
       <span style="font-size:13px;color:var(--text-secondary)">${pct}% ready</span>
     </div>
     <div class="section-card" style="margin-bottom:1rem">
@@ -2499,7 +2492,7 @@ function renderPTOSection(){
 
   const tabs=S.pto.instances.map((ins,i)=>`
     <div style="display:flex;align-items:center;gap:2px">
-      <button onclick="ptoSetActive(${i})" style="padding:5px 12px;border-radius:var(--radius);border:1px solid ${i===S.pto.activeInstance?'var(--blue)':'var(--border)'};background:${i===S.pto.activeInstance?'var(--blue)':'var(--surface)'};color:${i===S.pto.activeInstance?'#fff':'var(--text)'};font-size:13px;font-weight:${i===S.pto.activeInstance?'500':'400'};cursor:pointer">${ins.label}</button>
+      <button onclick="ptoSetActive(${i})" style="padding:5px 12px;border-radius:var(--radius);border:1px solid ${i===S.pto.activeInstance?'var(--blue)':'var(--border)'};background:${i===S.pto.activeInstance?'var(--blue)':'var(--surface)'};color:${i===S.pto.activeInstance?'#fff':'var(--text)'};font-size:13px;font-weight:${i===S.pto.activeInstance?'500':'400'};cursor:pointer">${esc(ins.label)}</button>
       <button onclick="event.stopPropagation();ptoRenameInstance(${i})" title="Rename" style="background:none;border:none;color:var(--text-hint);cursor:pointer;font-size:12px;padding:2px 4px;border-radius:4px">✎</button>
       ${S.pto.instances.length>1?`<button onclick="event.stopPropagation();ptoDeleteInstance(${i})" title="Delete" style="background:none;border:none;color:var(--text-hint);cursor:pointer;font-size:14px;padding:2px 4px;border-radius:4px">&#x2715;</button>`:''}
     </div>`).join('');
@@ -2512,7 +2505,7 @@ function renderPTOSection(){
 
   <div class="section-card" style="margin-bottom:1.5rem">
     <div class="section-header" style="margin-bottom:1rem">
-      <span style="font-weight:500">PTO Readiness — ${inst.label}</span>
+      <span style="font-weight:500">PTO Readiness — ${esc(inst.label)}</span>
       <span style="font-size:13px;color:var(--text-secondary)">${pct}% complete</span>
     </div>
     <div class="progress-wrap"><div class="progress-bar" style="width:${pct}%;background:${barColor}"></div></div>
@@ -2607,7 +2600,7 @@ function isLynxDay(){
 }
 function getGreeting(){
   const h=new Date().getHours();
-  const name=S.cfg.userName?', '+S.cfg.userName:'';
+  const name=S.cfg.userName?', '+esc(S.cfg.userName):'';
   let main,sub;
   if(h<12){main='Good morning'+name+'! \u2600';sub='Here\'s your overview for '+MONTHS[S.month]+' '+S.year+'.';}
   else if(h<18){main='Good afternoon'+name+'! \uD83D\uDC4B';sub='Here\'s your overview for '+MONTHS[S.month]+' '+S.year+'.';}
@@ -2672,7 +2665,7 @@ function renderReportsView(){
   const sortedMonths=[...allMonths].sort();
   const mOpts=sortedMonths.map(m=>'<option value="'+m+'"'+(rf.fromMonth===m?' selected':'')+'>'+m+'</option>').join('');
   const mOpts2=sortedMonths.map(m=>'<option value="'+m+'"'+(rf.toMonth===m?' selected':'')+'>'+m+'</option>').join('');
-  const cOpts=allC.map(c=>'<option value="'+c.id+'"'+(rf.cid===c.id?' selected':'')+'>'+c.name+'</option>').join('');
+  const cOpts=allC.map(c=>'<option value="'+c.id+'"'+(rf.cid===c.id?' selected':'')+'>'+esc(c.name)+'</option>').join('');
   const rows=[];
   allC.forEach(c=>{
     if(rf.cid&&rf.cid!==c.id)return;
@@ -2681,7 +2674,7 @@ function renderReportsView(){
       if(kcid!==c.id)return;
       if(rf.fromMonth&&kmonth<rf.fromMonth)return;
       if(rf.toMonth&&kmonth>rf.toMonth)return;
-      (S.entries[k]||[]).forEach(e=>{rows.push({customer:c.name,date:e.date,hours:e.hours,desc:e.desc||'',rev:e.hours*rate(c)});});
+      (S.entries[k]||[]).forEach(e=>{rows.push({customer:esc(c.name),date:e.date,hours:e.hours,desc:esc(e.desc||''),rev:e.hours*rate(c)});});
     });
   });
   rows.sort((a,b)=>a.date.localeCompare(b.date));
@@ -2715,7 +2708,7 @@ function renderExportPanel(){
   const tickBlue='<svg style="width:9px;height:9px;stroke:var(--blue);fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>';
   const allSel=xf.cids.length===0;
   const selCount=xf.cids.length;
-  const selLabel=allSel?'All customers':selCount===1?(allC.find(function(cu){return cu.id===xf.cids[0];})||{name:'1 selected'}).name:selCount+' customers selected';
+  const selLabel=allSel?'All customers':selCount===1?esc((allC.find(function(cu){return cu.id===xf.cids[0];})||{name:'1 selected'}).name):selCount+' customers selected';
   const allRow='<label style="display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:13px;color:var(--text-secondary)" onclick="xfClearCusts()">'
     +'<span style="width:15px;height:15px;border-radius:4px;border:2px solid '+(allSel?'var(--blue)':'var(--border2)')+';background:var(--surface);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">'
     +(allSel?tickBlue:'')+'</span>All customers</label>';
@@ -2723,7 +2716,7 @@ function renderExportPanel(){
     const chk=xf.cids.includes(cu.id);
     return '<label style="display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:13px" onclick="xfToggleCust(this.dataset.id)" data-id="'+cu.id+'">'
       +'<span style="width:15px;height:15px;border-radius:4px;border:2px solid '+(chk?'var(--blue)':'var(--border2)')+';background:'+(chk?'var(--blue)':'var(--surface)')+';display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">'
-      +(chk?tick:'')+'</span>'+cu.name+'</label>';
+      +(chk?tick:'')+'</span>'+esc(cu.name)+'</label>';
   }).join('');
   const dropStyle=xf.drop
     ?'position:absolute;top:calc(100% + 4px);left:0;min-width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);z-index:99;max-height:200px;overflow-y:auto;padding:4px;box-shadow:0 4px 16px rgba(0,0,0,0.1)'
