@@ -1027,7 +1027,7 @@ function renderCCard(c){
     </div>`;
   }
   return `<div class="customer-card${arch?' archived-card':''}" onclick="openDetail('${c.id}')">
-    ${arch?'':`<button class="card-x" onclick="event.stopPropagation();archiveCustomer('${c.id}')" title="Remove">&#x2715;</button>`}
+    ${arch?'':`<button class="card-x" onclick="event.stopPropagation();S.modal={type:'confirmArchive',cid:'${c.id}'};render()" title="Archive">&#x2715;</button>`}
     <div class="c-name-row">
       ${c.logo?`<img class="c-logo" src="${c.logo}" alt="${esc(c.name)}">`:`<div class="c-dot${arch?' archived':''}" style="${arch?'':`background:${colorForCustomer(c.id)}`}"></div>`}
       <span class="c-name">${esc(c.name)}</span>
@@ -1133,6 +1133,7 @@ function renderDetail(app){
     <div style="display:flex;gap:8px">
       ${arch?'':`<button class="btn-secondary" onclick="exportCustomerHours('${c.id}')">${ic.excel} Export hours</button>`}
       ${arch?'':`<button class="btn-secondary" onclick="openEditCustomer('${c.id}')">${ic.edit} Edit</button>`}
+      ${arch?`<button class="btn-secondary" onclick="unarchiveCustomer('${c.id}')" style="color:var(--green);border-color:var(--green)"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg> Unarchive</button>`:''}
     </div>
   </div>
   ${tBar}
@@ -1438,6 +1439,23 @@ function renderModal(app){
       </div>
     </div>`;
   }
+  if(m.type==='confirmArchive'){
+    const c=findC(m.cid)||{};
+    inner=`<div class="modal">
+      <div class="modal-header"><h2>Archive customer?</h2><button class="btn-ghost" onclick="closeModal()">${ic.x}</button></div>
+      <div class="field" style="text-align:center;padding:8px 0 4px">
+        <div style="width:48px;height:48px;border-radius:50%;background:#fff3cd;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <p style="font-size:15px;font-weight:600;color:var(--text);margin:0 0 8px">Are you sure you want to archive <em>${esc(c.name)}</em>?</p>
+        <p style="font-size:13px;color:var(--text-secondary);margin:0">This customer and all their time entries will be archived. You can unarchive them at any time from their detail page.</p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel-m" onclick="closeModal()">Cancel</button>
+        <button class="btn-ok-m" style="background:var(--amber);border-color:var(--amber)" onclick="closeModal();archiveCustomer('${m.cid}')">Archive</button>
+      </div>
+    </div>`;
+  }
   app.innerHTML=`<div class="overlay" onclick="if(event.target===this)closeModal()">${inner}</div>`;
 }
 
@@ -1730,6 +1748,13 @@ function archiveCustomer(id){
   Object.keys(S.entries).forEach(k=>{if(k.startsWith(id+'::')&&k.split('::')[1]>=curKey)delete S.entries[k];});
   saveActive();saveArchived();saveEntries();
   S.view='dashboard';S.selectedId=null;render();
+}
+function unarchiveCustomer(id){
+  const c=S.archived.find(x=>x.id===id);if(!c)return;
+  S.archived=S.archived.filter(x=>x.id!==id);
+  S.active.push(c);
+  saveActive();saveArchived();
+  S.view='detail';render();
 }
 function openDetail(id){S.selectedId=id;S.view='detail';render();}
 function goBack(){S.view='dashboard';S.selectedId=null;render();}
