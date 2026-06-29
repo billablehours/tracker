@@ -1379,7 +1379,19 @@ function renderModal(app){
     const vc=visibleCustomers();
     const {monday}=getFullWeekRange();
     const DAY_NAMES=['Mon','Tue','Wed','Thu','Fri'];
+
+    // Detect month boundary within this week
+    const now=new Date();
+    const curYear=now.getFullYear(),curMonth=now.getMonth();
+    const lastDayOfMonth=new Date(curYear,curMonth+1,0).getDate();
+    const lastDayStr=`${curYear}-${String(curMonth+1).padStart(2,'0')}-${String(lastDayOfMonth).padStart(2,'0')}`;
+    // Labels for the minority-month pill: next month's short name when viewing current month, prev month's short name when viewing next month
+    const nextMonthShort=new Date(curYear,curMonth+1,1).toLocaleDateString('en-GB',{month:'short'});
+    const prevMonthShort=new Date(curYear,curMonth-1,1).toLocaleDateString('en-GB',{month:'short'});
+
     let dayRows='';
+    let splitWeek=false;
+
     for(let d=0;d<5;d++){
       const day=new Date(monday);day.setDate(monday.getDate()+d);
       const dateStr=`${day.getFullYear()}-${String(day.getMonth()+1).padStart(2,'0')}-${String(day.getDate()).padStart(2,'0')}`;
@@ -1391,11 +1403,19 @@ function renderModal(app){
         });
       });
       const fmt=day.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
+      // A day belongs to a different month if it's past the last day of current month (next month days)
+      // or before the first day of current month (prev month days, e.g. viewing July and Mon/Tue are still June)
+      const dayMonth=day.getMonth();
+      const inOtherMonth=dayMonth!==curMonth;
+      if(inOtherMonth)splitWeek=true;
+      const otherMonthLabel=dayMonth>curMonth||( dayMonth===0&&curMonth===11)?nextMonthShort:prevMonthShort;
+      const pill=inOtherMonth?` <span style="font-size:10px;background:#e3edf6;color:var(--blue);border-radius:4px;padding:1px 5px;margin-left:4px">${otherMonthLabel}</span>`:'';
       dayRows+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)">
-        <span style="font-size:13px;color:var(--text-secondary)">${DAY_NAMES[d]} <span style="color:var(--text-hint);font-size:11px">${fmt}</span></span>
+        <span style="font-size:13px;color:var(--text-secondary)">${DAY_NAMES[d]} <span style="color:var(--text-hint);font-size:11px">${fmt}</span>${pill}</span>
         <span style="font-size:13px;font-weight:${dayTotal>0?'600':'400'};color:${dayTotal>0?'var(--text)':'var(--text-hint)'}">${dayTotal>0?dayTotal+'h':'—'}</span>
       </div>`;
     }
+
     inner=`<div class="modal">
       <div class="modal-header"><h2>This week's hours</h2><button class="btn-ghost" onclick="closeModal()">${ic.x}</button></div>
       <div class="field">
