@@ -2790,14 +2790,15 @@ function exportXls(){
   });
   dataRows.sort((a,b)=>a[0].localeCompare(b[0]));
   if(dataRows.length===0){alert('No entries match the selected filters.');return;}
-  const totHours=dataRows.reduce((s,r)=>s+r[2],0);
   const safeStr=v=>v==null?'':String(v);
   const safeNum=v=>{const n=parseFloat(v);return isNaN(n)?0:n;};
+  const dataStartRow=2;
+  const dataEndRow=dataStartRow+dataRows.length-1;
   const aoa=[
     ['Date','Customer','Hours','Description'],
     ...dataRows.map(r=>[safeStr(r[0]),safeStr(r[1]),safeNum(r[2]),safeStr(r[3])]),
     [],
-    ['TOTAL','',safeNum(totHours),'']
+    ['TOTAL','',{f:'SUM(C'+dataStartRow+':C'+dataEndRow+')'},'']
   ];
   const ws=XLSX.utils.aoa_to_sheet(aoa);
   ws['!cols']=[{wch:14},{wch:24},{wch:8},{wch:44}];
