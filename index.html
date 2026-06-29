@@ -1084,8 +1084,8 @@ function renderDetail(app){
 
   const entriesHtml=dates.length===0?'<div class="empty-state">No entries yet this month.</div>'
     :weekStarts.map((ws,wi)=>{
-      const we=getWeekEnd(ws);
       const weekDates=weekMap[ws];
+      const we=weekDates.slice().sort().pop();
       const weekHours=weekDates.reduce((s,d)=>s+byDate[d].reduce((s2,e)=>s2+e.hours,0),0);
       const datesHtml=weekDates.map(d=>{
         const de=byDate[d],dh=de.reduce((s,e)=>s+e.hours,0);
@@ -1107,10 +1107,15 @@ function renderDetail(app){
           </div>`).join('')}
         </div>`;
       }).join('');
-      return `${wi>0?'<div style="height:1px;background:var(--border);margin:14px 0"></div>':''}
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <span style="font-size:14px;font-weight:800;color:var(--text)">Week of ${fmtShort(ws)} – ${fmtShort(we)}</span>
-          <span style="font-size:12px;font-weight:600;color:var(--text-secondary)">${weekHours.toFixed(1)}h</span>
+      return `${wi>0?'<div style="height:16px"></div>':''}
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;margin-top:${wi>0?'4px':'0'}">
+          <div style="flex:1;height:1px;background:var(--border)"></div>
+          <div style="display:flex;align-items:center;gap:8px;background:#e3edf6;color:var(--blue);border-radius:99px;padding:5px 14px;white-space:nowrap;border:1px solid #c8daf0">
+            ${ic.calendar}
+            <span style="font-size:12px;font-weight:700;letter-spacing:0.02em">Week of ${fmtShort(ws)} – ${fmtShort(we)}</span>
+            <span style="font-size:12px;font-weight:600;opacity:0.75;margin-left:4px">· ${weekHours.toFixed(1)}h</span>
+          </div>
+          <div style="flex:1;height:1px;background:var(--border)"></div>
         </div>
         ${datesHtml}`;
     }).join('');
