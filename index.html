@@ -1745,7 +1745,8 @@ function archiveCustomer(id){
   S.active=S.active.filter(x=>x.id!==id);
   S.archived.push(c);
   const curKey=mk(S.year,S.month);
-  Object.keys(S.entries).forEach(k=>{if(k.startsWith(id+'::')&&k.split('::')[1]>=curKey)delete S.entries[k];});
+  // Only delete future months — keep current month entries intact
+  Object.keys(S.entries).forEach(k=>{if(k.startsWith(id+'::')&&k.split('::')[1]>curKey)delete S.entries[k];});
   saveActive();saveArchived();saveEntries();
   S.view='dashboard';S.selectedId=null;render();
 }
@@ -1754,7 +1755,10 @@ function unarchiveCustomer(id){
   S.archived=S.archived.filter(x=>x.id!==id);
   S.active.push(c);
   saveActive();saveArchived();
-  S.view='detail';render();
+  // Navigate to current month so entries are visible and logo renders correctly
+  const now=new Date();
+  S.year=now.getFullYear();S.month=now.getMonth();
+  S.selectedId=id;S.view='detail';render();
 }
 function openDetail(id){S.selectedId=id;S.view='detail';render();}
 function goBack(){S.view='dashboard';S.selectedId=null;render();}
