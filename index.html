@@ -488,6 +488,15 @@ function getFullWeekRange(){
   return {monday,sunday};
 }
 function weekKey(){const {monday}=getWeekRange();return `${monday.getFullYear()}-${p2(monday.getMonth()+1)}-${p2(monday.getDate())}`;}
+function weekOtherMonthInfo(){
+  const {monday,friday}=getWeekRange();
+  const curYm=`${S.year}-${p2(S.month+1)}`;
+  const monYm=`${monday.getFullYear()}-${p2(monday.getMonth()+1)}`;
+  const friYm=`${friday.getFullYear()}-${p2(friday.getMonth()+1)}`;
+  if(monYm===curYm&&friYm===curYm)return null;
+  const otherDate=monYm!==curYm?monday:friday;
+  return {label:otherDate.toLocaleDateString('en-GB',{month:'short'})};
+}
 function getWeekExpected(){
   try{const r=localStorage.getItem('bht_week_expected');if(r){const o=JSON.parse(r);if(o[weekKey()]!==undefined)return o[weekKey()];}
   }catch(e){}return 40;
@@ -500,18 +509,20 @@ function weekHours(vc){
   const {monday,sunday}=getFullWeekRange();let total=0;
   const monStr=`${monday.getFullYear()}-${String(monday.getMonth()+1).padStart(2,'0')}-${String(monday.getDate()).padStart(2,'0')}`;
   const sunStr=`${sunday.getFullYear()}-${String(sunday.getMonth()+1).padStart(2,'0')}-${String(sunday.getDate()).padStart(2,'0')}`;
+  const curYm=`${S.year}-${String(S.month+1).padStart(2,'0')}`;
   vc.forEach(c=>{[-1,0,1].forEach(off=>{
     let y=S.year,m=S.month+off;if(m<0){m=11;y--;}if(m>11){m=0;y++;}
-    getE(c.id,y,m).forEach(e=>{if(e.date>=monStr&&e.date<=sunStr)total+=e.hours;});
+    getE(c.id,y,m).forEach(e=>{if(e.date>=monStr&&e.date<=sunStr&&e.date.slice(0,7)===curYm)total+=e.hours;});
   });});return total;
 }
 function weekHoursForCustomer(cid){
   const {monday,sunday}=getFullWeekRange();let total=0;
   const monStr2=`${monday.getFullYear()}-${String(monday.getMonth()+1).padStart(2,'0')}-${String(monday.getDate()).padStart(2,'0')}`;
   const sunStr2=`${sunday.getFullYear()}-${String(sunday.getMonth()+1).padStart(2,'0')}-${String(sunday.getDate()).padStart(2,'0')}`;
+  const curYm2=`${S.year}-${String(S.month+1).padStart(2,'0')}`;
   [-1,0,1].forEach(off=>{
     let y=S.year,m=S.month+off;if(m<0){m=11;y--;}if(m>11){m=0;y++;}
-    getE(cid,y,m).forEach(e=>{if(e.date>=monStr2&&e.date<=sunStr2)total+=e.hours;});
+    getE(cid,y,m).forEach(e=>{if(e.date>=monStr2&&e.date<=sunStr2&&e.date.slice(0,7)===curYm2)total+=e.hours;});
   });
   return total;
 }
@@ -830,6 +841,7 @@ function renderDashboard(app){
             <div class="s-value" style="font-size:${grev.total>=10000?'15px':'18px'}">${th.toFixed(1)}</div>
             <div class="s-label" style="margin-top:10px">This week (Mon–Fri)</div>
             <div class="s-value" style="font-size:${grev.total>=10000?'15px':'18px'}">${wh.toFixed(1)}h</div>
+            ${(()=>{const om=weekOtherMonthInfo();return om?`<div style="font-size:11px;color:var(--text-hint);margin-top:2px">${om.label} hours not counted</div>`:'';})()}
           </div>
           <div class="stat-icon" style="background:#e3edf6;color:#1860a8">${ic.clock}</div>
         </div>
@@ -1423,6 +1435,7 @@ function renderModal(app){
         <label>Billable hours logged this week</label>
         <div class="cpill" style="font-weight:500">${billable.toFixed(1)}h</div>
         <div style="margin-top:10px">${dayRows}</div>
+        ${splitWeek?`<div style="margin-top:8px;font-size:12px;color:var(--text-hint)">Days from another month (tagged with a pill) are shown for reference but their hours aren't included in the total above.</div>`:''}
       </div>
       <div class="field">
         <label>Expected working hours this week</label>
@@ -2698,6 +2711,7 @@ function renderHeroStats(){
     +'<div class=\"hstat-label\">Utilization</div>'
     +'<div class=\"hstat-value\">'+utilPct+'%</div>'
     +'<div class=\"hstat-sub\">'+wh.toFixed(1)+'h / '+weekTarget+'h this week</div>'
+    +(function(){const om=weekOtherMonthInfo();return om?'<div class=\"hstat-sub\" style=\"color:var(--text-hint)\">'+om.label+' hours not counted</div>':'';})()
     +'<div class=\"hstat-bar\"><div class=\"hstat-bar-fill\" style=\"width:'+utilPct+'%;background:'+utilColor+'\"></div></div></div>'
     +'<div class=\"hstat\">'+ibadge('#faf5ff','#9333ea','<line x1=\"12\" y1=\"1\" x2=\"12\" y2=\"23\"/><path d=\"M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6\"/>')
     +'<div class=\"hstat-label\">Forecasted Pay</div>'
