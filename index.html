@@ -1328,14 +1328,14 @@ function renderModal(app){
       const dd=new Date(wkMon);dd.setDate(wkMon.getDate()+d);
       const ds=dd.getFullYear()+'-'+String(dd.getMonth()+1).padStart(2,'0')+'-'+String(dd.getDate()).padStart(2,'0');
       const isSelected=(entry.date||today())===ds;
-      dayBtns+=`<button type="button" class="quick-btn${isSelected?' active':''}" onclick="setEntryDate('${ds}')" style="flex:1;font-size:11px;padding:4px 0;min-width:0">${DAY_ABBR[d]}</button>`;
+      dayBtns+=`<button type="button" class="quick-btn day-btn${isSelected?' active':''}" data-date="${ds}" onclick="setEntryDate('${ds}')" style="flex:1;font-size:11px;padding:4px 0;min-width:0">${DAY_ABBR[d]}</button>`;
     }
     inner=`<div class="modal">
       <div class="modal-header"><h2>${m.eid?'Edit time entry':'Add time entry'}</h2><button class="btn-ghost" onclick="closeModal()">${ic.x}</button></div>
       <div class="field"><label>Customer</label><div class="cpill"><div class="c-dot" style="background:${colorForCustomer(c.id)}"></div>${esc(c.name)} &middot; ${fmtMoney(r)}/hr</div></div>
       <div class="field"><label>Date</label>
-        <div style="display:flex;gap:4px;margin-bottom:8px">${dayBtns}</div>
-        <input id="m-date" type="date" value="${entry.date||today()}">
+        <div class="day-btn-row" style="display:flex;gap:4px;margin-bottom:8px">${dayBtns}</div>
+        <input id="m-date" type="date" value="${entry.date||today()}" onchange="syncDayBtns(this.value)">
       </div>
       <div class="field"><label>Hours</label>
         <div class="stepper">
@@ -1633,22 +1633,23 @@ function adjH(d){
   S.mh=Math.max(0.5,Math.round((S.mh+d)*2)/2);
   document.getElementById('hbig').textContent=S.mh;
   document.getElementById('hrev').textContent=fmtMoney(S.mh*r);
-  document.querySelectorAll('.quick-btn').forEach(b=>b.classList.toggle('active',parseFloat(b.textContent)===S.mh));
+  document.querySelectorAll('.quick-grid .quick-btn').forEach(b=>b.classList.toggle('active',parseFloat(b.textContent)===S.mh));
 }
 function setH(h){
   const r=rate(findC(S.modal.cid));
   S.mh=h;
   document.getElementById('hbig').textContent=h;
   document.getElementById('hrev').textContent=fmtMoney(h*r);
-  document.querySelectorAll('.quick-btn').forEach(b=>b.classList.toggle('active',parseFloat(b.textContent)===h));
+  document.querySelectorAll('.quick-grid .quick-btn').forEach(b=>b.classList.toggle('active',parseFloat(b.textContent)===h));
 }
 function setEntryDate(ds){
   const el=document.getElementById('m-date');
   if(el)el.value=ds;
-  document.querySelectorAll('.quick-grid .quick-btn').forEach(b=>{
-    if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes('setEntryDate')){
-      b.classList.toggle('active',b.getAttribute('onclick').includes("'"+ds+"'"));
-    }
+  syncDayBtns(ds);
+}
+function syncDayBtns(ds){
+  document.querySelectorAll('.day-btn-row .day-btn').forEach(b=>{
+    b.classList.toggle('active',b.getAttribute('data-date')===ds);
   });
 }
 
