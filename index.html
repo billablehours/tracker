@@ -40,6 +40,30 @@ textarea{resize:vertical;height:80px}
 .month-nav span{font-weight:500;font-size:14px;min-width:100px;text-align:center}
 .theme-btn{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary)}
 .theme-btn:hover{color:var(--text);background:var(--bg)}
+/* Nav comment search */
+.nav-search{position:relative}
+.nav-search input{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);height:36px;padding:0 28px 0 32px;font-size:13px;color:var(--text);width:200px}
+.nav-search input:focus{outline:none;border-color:var(--blue)}
+.nav-search input::placeholder{color:var(--text-hint)}
+.ns-ic{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-hint);pointer-events:none;display:flex}
+.ns-clear{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-hint);cursor:pointer;font-size:14px;padding:2px;display:flex}
+.ns-clear:hover{color:var(--text)}
+.nav-search-results{position:absolute;top:calc(100% + 6px);right:0;width:360px;max-width:88vw;max-height:400px;overflow-y:auto;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.14);z-index:200;padding:4px}
+.ns-item{display:block;width:100%;text-align:left;background:none;border:none;padding:8px 10px;border-radius:8px;cursor:pointer;color:var(--text);font-family:inherit}
+.ns-item:hover{background:var(--bg)}
+.ns-meta{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:11px;color:var(--text-hint);margin-bottom:2px}
+.ns-desc{font-size:13px;color:var(--text-secondary);line-height:1.35;word-break:break-word}
+.ns-item mark{background:#fde68a;color:#78350f;border-radius:3px;padding:0 1px}
+[data-theme="dark"] .ns-item mark{background:#78350f;color:#fde68a}
+.ns-empty{padding:12px;font-size:13px;color:var(--text-hint);text-align:center}
+.entry-item.hl{animation:hlPulse 2.8s ease-out;border-radius:8px}
+@keyframes hlPulse{0%{background:#fff3c4;box-shadow:inset 0 0 0 2px #f0b429}65%{background:#fff3c4;box-shadow:inset 0 0 0 2px rgba(240,180,41,0.4)}100%{background:transparent;box-shadow:none}}
+[data-theme="dark"] .entry-item.hl{animation:hlPulseDark 2.8s ease-out}
+@keyframes hlPulseDark{0%{background:#4a3c14;box-shadow:inset 0 0 0 2px #b8860b}65%{background:#4a3c14}100%{background:transparent;box-shadow:none}}
+/* Analytics filtered results */
+.an-gran{display:inline-flex;background:var(--bg);border:1px solid var(--border);border-radius:99px;padding:3px;gap:2px}
+.an-gran button{background:none;border:none;padding:5px 14px;border-radius:99px;font-size:12.5px;font-weight:500;color:var(--text-secondary);cursor:pointer;font-family:inherit}
+.an-gran button.active{background:var(--surface);color:var(--blue);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:1.5rem}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between}
 .stat-card[onclick]:hover,.stat-card[style*="cursor:pointer"]:hover{border-color:var(--blue)}
@@ -75,7 +99,7 @@ textarea{resize:vertical;height:80px}
 .target-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--text-hint);margin-bottom:5px}
 .mini-bar-wrap{background:var(--bg);border-radius:99px;height:5px;overflow:hidden}
 .mini-bar{height:5px;border-radius:99px;transition:width 0.3s}
-.detail-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:8px}
+.detail-header{display:flex;align-items:center;justify-content:space-between;margin-top:1.25rem;margin-bottom:1.5rem;flex-wrap:wrap;gap:8px}
 .detail-title{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:500}
 .detail-month{font-size:14px;color:var(--text-secondary);font-weight:400}
 .entry-group{margin-bottom:4px}
@@ -164,7 +188,7 @@ textarea{resize:vertical;height:80px}
 .top-nav{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #eaecf0;display:flex;align-items:center;padding:0 2rem;height:56px;gap:0}
 .nav-logo{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;color:var(--text);white-space:nowrap}
 .nav-logo-icon{width:28px;height:28px;background:linear-gradient(135deg,#4f8ef7,#1860a8);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.nav-tabs{display:flex;align-items:center;justify-content:center;flex:1}
+.nav-tabs{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;align-items:center}
 .nav-tab{background:none;border:none;padding:7px 18px;border-radius:99px;font-size:14px;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:6px}
 .nav-tab:hover{background:var(--bg);color:var(--text)}
 .nav-tab.active{background:#eef3ff;color:#1860a8;font-weight:600}
@@ -487,7 +511,21 @@ function getFullWeekRange(){
   const sunday=new Date(monday);sunday.setDate(monday.getDate()+6);sunday.setHours(23,59,59,999);
   return {monday,sunday};
 }
-function weekKey(){const {monday}=getWeekRange();return `${monday.getFullYear()}-${p2(monday.getMonth()+1)}-${p2(monday.getDate())}`;}
+function weekKey(off){const {monday}=getWeekRangeAt(off||0);return `${monday.getFullYear()}-${p2(monday.getMonth()+1)}-${p2(monday.getDate())}`;}
+function getWeekRangeAt(off){
+  const {monday}=getWeekRange();
+  const m2=new Date(monday);m2.setDate(monday.getDate()+(off||0)*7);
+  const friday=new Date(m2);friday.setDate(m2.getDate()+4);friday.setHours(23,59,59,999);
+  return {monday:m2,friday};
+}
+function getWeekExpectedAt(off){
+  try{const r=localStorage.getItem('bht_week_expected');if(r){const o=JSON.parse(r);if(o[weekKey(off)]!==undefined)return o[weekKey(off)];}
+  }catch(e){}return 40;
+}
+function setWeekExpectedAt(off,val){
+  let o={};try{const r=localStorage.getItem('bht_week_expected');if(r)o=JSON.parse(r);}catch(e){}
+  o[weekKey(off)]=val;try{localStorage.setItem('bht_week_expected',JSON.stringify(o));}catch(e){}
+}
 function weekOtherMonthInfo(){
   const {monday,friday}=getWeekRange();
   const curYm=`${S.year}-${p2(S.month+1)}`;
@@ -714,6 +752,37 @@ function render(){
   if(S._forgottenTimer)renderForgottenTimerOverlay(S._forgottenTimer.cid);
 }
 
+function renderTopNav(){
+  return `
+<nav class="top-nav">
+  <div class="nav-logo">
+    <div class="nav-logo-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+    BH &amp; PTO Tracker
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="goToToday()" title="Go to current month"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Today</button>
+  </div>
+  <div class="nav-right">
+    <div class="nav-search">
+      ${S._searchOpen?`
+      <span class="ns-ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+      <input id="nav-search-input" type="text" placeholder="Search comments…" value="${esc(S._searchQ||'')}" oninput="navSearchInput(this.value)" onkeydown="if(event.key==='Escape')navSearchClear()" autocomplete="off">
+      <button class="ns-clear" onclick="navSearchClear()" title="Close search">&#x2715;</button>
+      <div class="nav-search-results" id="nav-search-results" style="${(S._searchQ||'').trim()?'':'display:none'}">${buildSearchResults()}</div>
+      `:`
+      <button class="theme-btn" onclick="navSearchOpen()" title="Search comments"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+      `}
+    </div>
+    <button class="theme-btn" onclick="toggleTheme()" title="Toggle dark mode">${S.dark?ic.sun:ic.moon}</button>
+    <div class="month-nav">
+      <button onclick="prevMonth()">&#8249;</button>
+      <span>${MONTHS[S.month]} ${S.year}</span>
+      <button onclick="nextMonth()">&#8250;</button>
+    </div>
+  </div>
+</nav>`;
+}
+
 function renderDashboard(app){
   const vc=visibleCustomers();
   const th=vc.reduce((s,c)=>s+cHours(c.id),0);
@@ -730,23 +799,7 @@ function renderDashboard(app){
   const tab=S.navTab||'home';
   const greeting=getGreeting();
   app.innerHTML=`
-<nav class="top-nav">
-  <div class="nav-logo">
-    <div class="nav-logo-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
-    BH &amp; PTO Tracker
-  </div>
-  <div class="nav-tabs">
-    <button class="nav-tab active" onclick="goToToday()" title="Go to current month"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Today</button>
-  </div>
-  <div class="nav-right">
-    <button class="theme-btn" onclick="toggleTheme()" title="Toggle dark mode">${S.dark?ic.sun:ic.moon}</button>
-    <div class="month-nav">
-      <button onclick="prevMonth()">&#8249;</button>
-      <span>${MONTHS[S.month]} ${S.year}</span>
-      <button onclick="nextMonth()">&#8250;</button>
-    </div>
-  </div>
-</nav>
+${renderTopNav()}
 <div class="page">
 
   <div class="hero-banner" style="margin-top:1.25rem">
@@ -896,6 +949,7 @@ function renderDashboard(app){
       <div class="acc-body ${S.accOpen.an?"open":""}" id="body-an">
         <p class="sec-label">Export billable hours</p>
         ${renderExportPanel()}
+        ${renderFilteredAnalytics()}
         <div class="divider"></div>
         <p class="sec-label">Billable hours by customer</p>
         ${renderAnalyticsChart()}
@@ -1106,7 +1160,7 @@ function renderDetail(app){
             <span class="entry-date-lbl">${ic.calendar} ${fmtDate(d)}</span>
             <span class="entry-date-sum"><span>${dh.toFixed(1)} hours</span><span style="color:var(--green)">${fmtMoney(dh*r)}</span></span>
           </div>
-          ${[...de].reverse().map(e=>`<div class="entry-item">
+          ${[...de].reverse().map(e=>`<div class="entry-item${S._hlEntry===e.id?' hl':''}" id="entry-${e.id}">
             <div>
               <span class="entry-hrs">${e.hours}h</span><span class="entry-rev">${fmtMoney(e.hours*r)}</span>
               ${e.desc?`<div class="entry-desc">${esc(e.desc)}</div>`:''}
@@ -1133,6 +1187,7 @@ function renderDetail(app){
     }).join('');
 
   app.innerHTML=`
+${renderTopNav()}
 <div class="page">
   <div class="detail-header">
     <button class="btn-secondary" onclick="goBack()">${ic.back} Back</button>
@@ -1386,42 +1441,38 @@ function renderModal(app){
     </div>`;
     }
   } else if(m.type==='week'){
-    const billable=weekHours(visibleCustomers());
-    const expected=getWeekExpected();
-    const nonBillable=Math.max(0,expected-billable);
-    const vc=visibleCustomers();
-    const {monday}=getFullWeekRange();
+    const off=m.wkOff||0;
+    const vc=off===0?visibleCustomers():[...S.active,...S.archived];
+    const {monday}=getWeekRangeAt(off);
+    const sunday=new Date(monday);sunday.setDate(monday.getDate()+6);
     const DAY_NAMES=['Mon','Tue','Wed','Thu','Fri'];
 
-    // Detect month boundary within this week
+    // Detect month boundary within this week (current-week mode only)
     const now=new Date();
     const curYear=now.getFullYear(),curMonth=now.getMonth();
-    const lastDayOfMonth=new Date(curYear,curMonth+1,0).getDate();
-    const lastDayStr=`${curYear}-${String(curMonth+1).padStart(2,'0')}-${String(lastDayOfMonth).padStart(2,'0')}`;
-    // Labels for the minority-month pill: next month's short name when viewing current month, prev month's short name when viewing next month
     const nextMonthShort=new Date(curYear,curMonth+1,1).toLocaleDateString('en-GB',{month:'short'});
     const prevMonthShort=new Date(curYear,curMonth-1,1).toLocaleDateString('en-GB',{month:'short'});
 
     let dayRows='';
     let splitWeek=false;
+    let offWeekTotal=0;
 
     for(let d=0;d<5;d++){
       const day=new Date(monday);day.setDate(monday.getDate()+d);
       const dateStr=`${day.getFullYear()}-${String(day.getMonth()+1).padStart(2,'0')}-${String(day.getDate()).padStart(2,'0')}`;
       let dayTotal=0;
       vc.forEach(c=>{
-        [-1,0,1].forEach(off=>{
-          let y=S.year,mo=S.month+off;if(mo<0){mo=11;y--;}if(mo>11){mo=0;y++;}
+        [-1,0,1].forEach(o=>{
+          let y=day.getFullYear(),mo=day.getMonth()+o;if(mo<0){mo=11;y--;}if(mo>11){mo=0;y++;}
           getE(c.id,y,mo).forEach(e=>{if(e.date===dateStr)dayTotal+=e.hours;});
         });
       });
+      offWeekTotal+=dayTotal;
       const fmt=day.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
-      // A day belongs to a different month if it's past the last day of current month (next month days)
-      // or before the first day of current month (prev month days, e.g. viewing July and Mon/Tue are still June)
       const dayMonth=day.getMonth();
-      const inOtherMonth=dayMonth!==curMonth;
+      const inOtherMonth=off===0&&dayMonth!==curMonth;
       if(inOtherMonth)splitWeek=true;
-      const otherMonthLabel=dayMonth>curMonth||( dayMonth===0&&curMonth===11)?nextMonthShort:prevMonthShort;
+      const otherMonthLabel=dayMonth>curMonth||(dayMonth===0&&curMonth===11)?nextMonthShort:prevMonthShort;
       const pill=inOtherMonth?` <span style="font-size:10px;background:#e3edf6;color:var(--blue);border-radius:4px;padding:1px 5px;margin-left:4px">${otherMonthLabel}</span>`:'';
       dayRows+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)">
         <span style="font-size:13px;color:var(--text-secondary)">${DAY_NAMES[d]} <span style="color:var(--text-hint);font-size:11px">${fmt}</span>${pill}</span>
@@ -1429,16 +1480,31 @@ function renderModal(app){
       </div>`;
     }
 
+    const billable=off===0?weekHours(vc):offWeekTotal;
+    const expected=getWeekExpectedAt(off);
+    const nonBillable=Math.max(0,expected-billable);
+    const friday=new Date(monday);friday.setDate(monday.getDate()+4);
+    const rangeLbl=monday.toLocaleDateString('en-GB',{day:'2-digit',month:'short'})+' – '+friday.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+    const weekTitle=off===0?"This week's hours":rangeLbl;
+
     inner=`<div class="modal">
-      <div class="modal-header"><h2>This week's hours</h2><button class="btn-ghost" onclick="closeModal()">${ic.x}</button></div>
+      <div class="modal-header">
+        <div style="display:flex;align-items:center;gap:6px;min-width:0">
+          <button class="btn-ghost" onclick="weekModalShift(-1)" title="Previous week" style="font-size:17px;padding:2px 8px">&#8249;</button>
+          <h2 style="margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${weekTitle}</h2>
+          <button class="btn-ghost" onclick="weekModalShift(1)" title="Next week" style="font-size:17px;padding:2px 8px">&#8250;</button>
+        </div>
+        <button class="btn-ghost" onclick="closeModal()">${ic.x}</button>
+      </div>
+      ${off!==0?`<div style="margin:-6px 0 8px"><button class="btn-ghost" style="font-size:12px;color:var(--blue)" onclick="weekModalShift(${-off})">&#8635; Back to this week</button></div>`:''}
       <div class="field">
-        <label>Billable hours logged this week</label>
+        <label>Billable hours logged ${off===0?'this week':'that week'}</label>
         <div class="cpill" style="font-weight:500">${billable.toFixed(1)}h</div>
         <div style="margin-top:10px">${dayRows}</div>
         ${splitWeek?`<div style="margin-top:8px;font-size:12px;color:var(--text-hint)">Days from another month (tagged with a pill) are shown for reference but their hours aren't included in the total above.</div>`:''}
       </div>
       <div class="field">
-        <label>Expected working hours this week</label>
+        <label>Expected working hours ${off===0?'this week':'that week'}</label>
         <input id="m-week-exp" type="number" min="0" step="0.5" value="${expected}" placeholder="e.g. 40" oninput="updateWeekPreview(${billable})">
         <div class="field-hint">Default is 40. Reduce by 8 for each public holiday this week.</div>
       </div>
@@ -1477,6 +1543,91 @@ function toggleTheme(){
   try{localStorage.setItem('bht_dark',JSON.stringify(S.dark));}catch(e){}
   render();
 }
+
+/* ===== Global comment search ===== */
+function searchEntries(q){
+  const query=q.trim().toLowerCase();
+  if(!query)return [];
+  const byId={};
+  [...S.active,...S.archived].forEach(c=>{byId[c.id]=c;});
+  const out=[];
+  Object.keys(S.entries).forEach(k=>{
+    const cid=k.split('::')[0];
+    const c=byId[cid];
+    if(!c)return;
+    (S.entries[k]||[]).forEach(e=>{
+      if((e.desc||'').toLowerCase().includes(query)){
+        out.push({cid,eid:e.id,name:c.name,date:e.date,hours:e.hours,desc:e.desc||''});
+      }
+    });
+  });
+  out.sort((a,b)=>b.date.localeCompare(a.date));
+  return out;
+}
+function hlMatch(text,q){
+  const ql=q.trim().toLowerCase();
+  if(!ql)return esc(text);
+  const lower=text.toLowerCase();
+  let i=0,res='';
+  while(true){
+    const idx=lower.indexOf(ql,i);
+    if(idx<0){res+=esc(text.slice(i));break;}
+    res+=esc(text.slice(i,idx))+'<mark>'+esc(text.slice(idx,idx+ql.length))+'</mark>';
+    i=idx+ql.length;
+  }
+  return res;
+}
+function buildSearchResults(){
+  const q=(S._searchQ||'').trim();
+  if(!q)return '';
+  const results=searchEntries(q);
+  if(results.length===0)return '<div class="ns-empty">No comments match &ldquo;'+esc(q)+'&rdquo;</div>';
+  const shown=results.slice(0,30);
+  return shown.map(r=>'<button class="ns-item" onclick="navGoEntry(this.dataset.cid,this.dataset.date,this.dataset.eid)" data-cid="'+r.cid+'" data-date="'+r.date+'" data-eid="'+esc(r.eid||'')+'">'
+    +'<div class="ns-meta"><span style="font-weight:600;color:var(--text)">'+esc(r.name)+'</span><span>'+xfFmtDate(r.date)+' &middot; '+Number(r.hours).toFixed(1)+'h</span></div>'
+    +'<div class="ns-desc">'+hlMatch(r.desc,q)+'</div>'
+    +'</button>').join('')
+    +(results.length>30?'<div class="ns-empty">Showing 30 of '+results.length+' matches &mdash; refine your search</div>':'');
+}
+function navSearchInput(val){
+  S._searchQ=val;
+  const box=document.getElementById('nav-search-results');
+  if(!box)return;
+  if(val.trim()){
+    box.style.display='';
+    box.innerHTML=buildSearchResults();
+  }else{
+    box.style.display='none';
+    box.innerHTML='';
+  }
+}
+function navSearchOpen(){
+  S._searchOpen=true;
+  render();
+  const inp=document.getElementById('nav-search-input');
+  if(inp)inp.focus();
+}
+function navSearchClear(){
+  S._searchQ='';
+  S._searchOpen=false;
+  render();
+}
+function navGoEntry(cid,date,eid){
+  const d=new Date(date+'T00:00:00');
+  if(!isNaN(d)){S.year=d.getFullYear();S.month=d.getMonth();}
+  S._searchQ='';
+  S._searchOpen=false;
+  S._hlEntry=eid||null;
+  openDetail(cid);
+  S._hlEntry=null;
+  if(eid){
+    setTimeout(function(){
+      const el=document.getElementById('entry-'+eid);
+      if(el&&el.scrollIntoView)el.scrollIntoView({behavior:'smooth',block:'center'});
+    },80);
+  }
+}
+
 function adjH(d){
   const r=rate(findC(S.modal.cid));
   S.mh=Math.max(0.5,Math.round((S.mh+d)*2)/2);
@@ -1551,13 +1702,19 @@ function changeAnalyticsYear(dir){
   render();
 }
 function openRevenueModal(){S.modal={type:'revenue'};render();}
-function openWeekModal(){S.modal={type:'week'};render();}
+function openWeekModal(){S.modal={type:'week',wkOff:0};render();}
+function weekModalShift(d){
+  if(!S.modal||S.modal.type!=='week')return;
+  S.modal.wkOff=(S.modal.wkOff||0)+d;
+  render();
+}
 function updateWeekPreview(billable){
   const exp=pN(document.getElementById('m-week-exp').value)||0;
   document.getElementById('m-week-nb').textContent=Math.max(0,exp-billable).toFixed(1)+'h';
 }
 function saveWeekExpected(){
-  setWeekExpected(pN(document.getElementById('m-week-exp').value)||0);
+  const off=(S.modal&&S.modal.wkOff)||0;
+  setWeekExpectedAt(off,pN(document.getElementById('m-week-exp').value)||0);
   S.modal=null;render();
 }
 let _pendingLogo=undefined; 
@@ -1633,9 +1790,14 @@ function showToast(msg){
 
 function copyWeeklyComments(cid){
   const {monday}=getWeekRange();
+  const today=new Date();
+  const curY=today.getFullYear(),curM=today.getMonth();
   const days=[];
   for(let i=0;i<7;i++){
     const d=new Date(monday);d.setDate(monday.getDate()+i);
+    // when the week straddles a month boundary, only include the days
+    // that belong to the current month (e.g. Mon-Tue at month end, or Wed-Fri at month start)
+    if(d.getFullYear()!==curY||d.getMonth()!==curM)continue;
     days.push(`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`);
   }
   const seen=new Set();
@@ -2816,7 +2978,7 @@ function renderExportPanel(){
     +'</div>'
     +(xf.calOpen==='xf-until'?xfRenderCal('xf-until'):'')
     +'</div></div>'
-    +'<div style="flex:0 0 auto"><button class="btn-primary" onclick="exportXls()">'+xlsIc+'Export Hours</button></div>'
+    +'<div style="flex:0 0 auto;display:flex;gap:8px"><button class="btn-secondary" onclick="applyAnalyticsFilter()"><svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-2px;margin-right:4px" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>View results</button><button class="btn-primary" onclick="exportXls()">'+xlsIc+'Export Hours</button></div>'
     +'</div>';
 }
 function xfToggleDrop(){
@@ -2832,6 +2994,164 @@ function xfToggleCust(id){
   render();
 }
 function xfClearCusts(){if(S._xf){S._xf.cids=[];S._xf.drop=false;}render();}
+
+/* ===== Analytics: filtered results with daily/weekly/monthly view ===== */
+function applyAnalyticsFilter(){
+  if(!S._xf)S._xf={cids:[],from:'',to:'',drop:false,calOpen:'',calYear:new Date().getFullYear(),calMonth:new Date().getMonth()};
+  if(!S._an)S._an={applied:null,gran:'monthly'};
+  S._an.applied={cids:[...(S._xf.cids||[])],from:S._xf.from||'',to:S._xf.to||''};
+  S._xf.drop=false;S._xf.calOpen='';
+  if(S.accOpen)S.accOpen.an=true;
+  render();
+}
+function clearAnalyticsFilter(){
+  if(S._an)S._an.applied=null;
+  render();
+}
+function setAnGran(g){
+  if(!S._an)S._an={applied:null,gran:'monthly'};
+  S._an.gran=g;
+  render();
+}
+function filteredEntryRows(f){
+  const allC=[...S.active,...S.archived];
+  const rows=[];
+  allC.forEach(cu=>{
+    if(f.cids.length>0&&!f.cids.includes(cu.id))return;
+    Object.keys(S.entries).forEach(k=>{
+      if(k.split('::')[0]!==cu.id)return;
+      (S.entries[k]||[]).forEach(e=>{
+        if(f.from&&e.date<f.from)return;
+        if(f.to&&e.date>f.to)return;
+        const d=new Date(e.date+'T00:00:00');
+        const r=rate(cu,d.getFullYear(),d.getMonth());
+        rows.push({cid:cu.id,name:cu.name,date:e.date,hours:e.hours,rev:e.hours*r});
+      });
+    });
+  });
+  rows.sort((a,b)=>a.date.localeCompare(b.date));
+  return rows;
+}
+function anPeriodKey(date,gran){
+  if(gran==='daily')return date;
+  if(gran==='weekly'){
+    const d=new Date(date+'T00:00:00');
+    const day=d.getDay();
+    const diff=day===0?-6:1-day;
+    d.setDate(d.getDate()+diff);
+    return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
+  }
+  return date.slice(0,7);
+}
+function anPeriodLabel(key,gran){
+  if(gran==='monthly'){
+    const parts=key.split('-');
+    return MONTHS[parseInt(parts[1],10)-1].slice(0,3)+' '+String(parts[0]).slice(2);
+  }
+  const d=new Date(key+'T00:00:00');
+  const lbl=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  return gran==='weekly'?'Wk '+lbl:lbl;
+}
+function anCurrentWindow(gran){
+  const now=new Date();
+  const y=now.getFullYear(),m=now.getMonth(),d=now.getDate();
+  const ds=y+'-'+p2(m+1)+'-'+p2(d);
+  if(gran==='daily'){
+    return {from:ds,to:ds,label:'Today · '+xfFmtDate(ds)};
+  }
+  if(gran==='weekly'){
+    const day=now.getDay();
+    const diff=day===0?-6:1-day;
+    const mon=new Date(y,m,d+diff);
+    const sun=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+6);
+    const f=mon.getFullYear()+'-'+p2(mon.getMonth()+1)+'-'+p2(mon.getDate());
+    const t=sun.getFullYear()+'-'+p2(sun.getMonth()+1)+'-'+p2(sun.getDate());
+    return {from:f,to:t,label:'This week · '+xfFmtDate(f)+' – '+xfFmtDate(t)};
+  }
+  const last=new Date(y,m+1,0).getDate();
+  return {from:y+'-'+p2(m+1)+'-01',to:y+'-'+p2(m+1)+'-'+p2(last),label:'This month · '+MONTHS[m]+' '+y};
+}
+function renderFilteredAnalytics(){
+  if(!S._an)S._an={applied:null,gran:'monthly'};
+  if(!S._an.applied)return '';
+  const applied=true;
+  const f=S._an.applied;
+  const gran=S._an.gran||'monthly';
+  const win=anCurrentWindow(gran);
+  // intersect the current day/week/month window with the applied date filter
+  const effFrom=f.from&&f.from>win.from?f.from:win.from;
+  const effTo=f.to&&f.to<win.to?f.to:win.to;
+  const rows=effFrom>effTo?[]:filteredEntryRows({cids:f.cids,from:effFrom,to:effTo});
+  const custLabel=f.cids.length===0?'All customers':f.cids.length+' customer'+(f.cids.length>1?'s':'');
+  const dateFilterNote=(f.from||f.to)?' · filter: '+(f.from?xfFmtDate(f.from):'…')+' – '+(f.to?xfFmtDate(f.to):'…'):'';
+  const clearBtn='<button class="btn-ghost" style="font-size:12px" onclick="clearAnalyticsFilter()">&#x2715; Clear filters</button>';
+  const granBtns='<div class="an-gran">'+['daily','weekly','monthly'].map(g=>
+    '<button class="'+(gran===g?'active':'')+'" onclick="setAnGran(\''+g+'\')">'+g.charAt(0).toUpperCase()+g.slice(1)+'</button>').join('')+'</div>';
+  const header='<div class="divider"></div>'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:1rem;flex-wrap:nowrap">'
+    +'<div style="flex:1;min-width:0"><p class="sec-label" style="margin:0 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Billable hours per customer — '+esc(win.label)+'</p>'
+    +'<span style="font-size:12px;color:var(--text-hint);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+custLabel+esc(dateFilterNote)+'</span></div>'
+    +'<div style="display:flex;align-items:center;gap:10px;flex-shrink:0">'+granBtns+clearBtn+'</div></div>';
+  if(rows.length===0){
+    return header+'<div class="empty-state" style="padding:2rem 0">No entries for this period'+((f.from||f.to)?' within the selected date filter':'')+'.</div>';
+  }
+  const custMap={};
+  rows.forEach(r=>{
+    if(!custMap[r.cid])custMap[r.cid]={cid:r.cid,name:r.name,hours:0,rev:0};
+    custMap[r.cid].hours+=r.hours;custMap[r.cid].rev+=r.rev;
+  });
+  const custs=Object.values(custMap).sort((a,b)=>b.hours-a.hours);
+  // break the window into days: today = 1 bar, week = its days, month = its days
+  const subGran='daily';
+  const periodMap={};
+  rows.forEach(r=>{
+    const key=anPeriodKey(r.date,subGran);
+    if(!periodMap[key])periodMap[key]={key,total:0,per:{}};
+    periodMap[key].total+=r.hours;
+    periodMap[key].per[r.cid]=(periodMap[key].per[r.cid]||0)+r.hours;
+  });
+  const periods=Object.values(periodMap).sort((a,b)=>a.key.localeCompare(b.key));
+  // stacked bar chart
+  const maxTotal=Math.max(1,...periods.map(p=>p.total));
+  const niceMax=Math.ceil(maxTotal/(maxTotal>40?20:maxTotal>10?5:2))*(maxTotal>40?20:maxTotal>10?5:2)||2;
+  const topPad=28,chartH=200;
+  const barW=Math.min(52,Math.max(18,560/periods.length));
+  const chartW=Math.max(360,periods.length*(barW+14));
+  const gap=(chartW-barW*periods.length)/(periods.length+1);
+  let bars='';
+  periods.forEach((pd,i)=>{
+    const x=gap+i*(barW+gap);
+    let yCursor=chartH+topPad;
+    const segs=custs.filter(c=>pd.per[c.cid]).map(c=>({cid:c.cid,name:c.name,hours:pd.per[c.cid]})).sort((a,b)=>b.hours-a.hours);
+    segs.forEach(seg=>{
+      const segH=(seg.hours/niceMax)*chartH;
+      const y=yCursor-segH;
+      bars+='<rect x="'+x+'" y="'+y+'" width="'+barW+'" height="'+segH+'" fill="'+colorForCustomer(seg.cid)+'" rx="2" style="cursor:pointer"'
+        +' data-n="'+esc(seg.name)+'" data-h="'+seg.hours.toFixed(1)+'h"'
+        +' onmousemove="chartTooltip(event,this.dataset.n,this.dataset.h)" onmouseleave="hideChartTooltip()"></rect>';
+      yCursor=y;
+    });
+    const showLbl=periods.length<=16||i%2===0;
+    if(showLbl)bars+='<text x="'+(x+barW/2)+'" y="'+(chartH+topPad+18)+'" text-anchor="middle" font-size="10.5" fill="var(--text-secondary)" font-family="\'DM Sans\',sans-serif">'+anPeriodLabel(pd.key,subGran)+'</text>';
+    if(pd.total>0&&periods.length<=16){
+      const totalY=(chartH+topPad)-((pd.total/niceMax)*chartH)-7;
+      bars+='<text x="'+(x+barW/2)+'" y="'+Math.max(totalY,12)+'" text-anchor="middle" font-size="10.5" font-weight="600" fill="var(--text)" font-family="\'DM Sans\',sans-serif">'+pd.total.toFixed(1)+'h</text>';
+    }
+  });
+  let gridLines='';
+  [0,0.25,0.5,0.75,1].forEach(frac=>{
+    const y=(chartH+topPad)-(frac*chartH);
+    const val=Math.round(niceMax*frac*10)/10;
+    gridLines+='<line x1="0" y1="'+y+'" x2="'+chartW+'" y2="'+y+'" stroke="var(--border)" stroke-width="1"/>'
+      +'<text x="-8" y="'+(y+4)+'" text-anchor="end" font-size="10" fill="var(--text-hint)" font-family="\'DM Sans\',sans-serif">'+val+'h</text>';
+  });
+  const legendHtml=custs.map(c=>'<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);margin-right:14px;margin-bottom:6px">'
+    +'<span style="width:10px;height:10px;border-radius:3px;background:'+colorForCustomer(c.cid)+';display:inline-block"></span>'+esc(c.name)+' &middot; '+c.hours.toFixed(1)+'h</span>').join('');
+  const chart='<div style="overflow-x:auto"><svg viewBox="-40 0 '+(chartW+20)+' '+(chartH+topPad+36)+'" width="100%" style="min-width:'+Math.min(480,chartW)+'px;max-width:760px;display:block;margin:0 auto" font-family="\'DM Sans\',sans-serif">'
+    +gridLines+bars+'</svg></div>'
+    +'<div style="margin-top:.75rem;display:flex;flex-wrap:wrap">'+legendHtml+'</div>';
+  return header+chart;
+}
 
 function exportXls(){
   if(!S._xf)S._xf={cids:[],from:'',to:'',drop:false,calOpen:'',calYear:new Date().getFullYear(),calMonth:new Date().getMonth()};
@@ -2933,6 +3253,13 @@ function xfRenderCal(which){
 load();
 S.year=new Date().getFullYear();
 S.month=new Date().getMonth();
+document.addEventListener('click',function(e){
+  if(S._searchOpen&&!e.target.closest('.nav-search')){
+    S._searchQ='';
+    S._searchOpen=false;
+    render();
+  }
+});
 render();
 checkFridayReminder();
 </script>
