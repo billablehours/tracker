@@ -2254,7 +2254,8 @@ function timerElapsed(cid){
 function timerBillable(ms){
   const mins=ms/60000;
   if(mins<15)return 0;
-  return Math.ceil(mins/30)*0.5;
+  // 15–44 min → 0.5h, 45–74 min → 1.0h, 75–104 min → 1.5h, ...
+  return Math.round(mins/30)*0.5;
 }
 
 function timerFmt(ms){
@@ -2273,7 +2274,7 @@ function billLabel(ms,lastAutoBill){
   if(b===0)return '<span style="color:var(--text-secondary)">Under 15 min — auto-logs at 15 min</span>';
   if(logged>0&&b===logged){
     const next=logged+0.5;
-    const minsToNext=Math.round((next*30)-(ms/60000));
+    const minsToNext=Math.round((next*60-15)-(ms/60000));
     return '<span style="color:#16a34a">✓ Auto-logged '+logged+'h</span> · next at '+next+'h (~'+minsToNext+' min)';
   }
   return 'Auto-logs as <strong>'+b+'h</strong>';
