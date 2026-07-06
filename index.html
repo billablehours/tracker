@@ -438,6 +438,7 @@ let S={
 
 function load(){
   try{const r=localStorage.getItem('bht_status_reports');if(r)S.statusReports=JSON.parse(r);}catch(e){}
+  try{const r=localStorage.getItem('bht_timers');if(r)S.timers=JSON.parse(r);}catch(e){}
   try{const r=localStorage.getItem(SK.C);if(r)S.active=JSON.parse(r);}catch(e){S.active=[];}
   try{const r=localStorage.getItem(SK.A);if(r)S.archived=JSON.parse(r);}catch(e){S.archived=[];}
   try{const r=localStorage.getItem(SK.E);if(r)S.entries=JSON.parse(r);}catch(e){S.entries={};}
@@ -776,6 +777,11 @@ function renderAnalyticsChart(){
 
 function render(){
   applyTheme();
+  // Safety net: any running timer must have a live tick interval
+  // (restores the ticking display after navigation and guarantees auto-log keeps working)
+  if(S.timers)Object.keys(S.timers).forEach(cid=>{
+    if(S.timers[cid]&&S.timers[cid].running&&!_timerIntervals[cid])_startTimerTick(cid);
+  });
   const app=document.getElementById('app');
   if(S.modal){renderModal(app);return;}
   if(S.view==='detail')renderDetail(app);
@@ -2237,6 +2243,7 @@ function nextMonth(){if(S.month===11){S.month=0;S.year++;}else S.month++;render(
 let _timerIntervals={};
 
 function timerGet(cid){return S.timers&&S.timers[cid]?S.timers[cid]:null;}
+function saveTimers(){try{localStorage.setItem('bht_timers',JSON.stringify(S.timers||{}));}catch(e){}}
 
 function timerElapsed(cid){
   const t=timerGet(cid);if(!t)return 0;
@@ -2311,13 +2318,14 @@ function renderTimerBar(cid,arch){
 
 function timerSetComment(cid,val){
   if(!S.timers)S.timers={};
-  if(S.timers[cid])S.timers[cid].comment=val;
+  if(S.timers[cid]){S.timers[cid].comment=val;saveTimers();}
 }
 
 function timerStart(cid){
   if(!S.timers)S.timers={};
   const inp=document.getElementById('tc-'+cid);
   S.timers[cid]={start:Date.now(),elapsed:0,running:true,comment:inp?inp.value:''};
+  saveTimers();
   _startTimerTick(cid);
   render();
 }
@@ -2325,6 +2333,7 @@ function timerStart(cid){
 function timerResume(cid){
   const t=timerGet(cid);if(!t)return;
   t.start=Date.now();t.running=true;
+  saveTimers();
   _startTimerTick(cid);
   const bar=document.getElementById('timer-bar-'+cid);
   if(bar){const c=findC(cid);bar.outerHTML=renderTimerBar(cid,false);}
@@ -2334,6 +2343,7 @@ function timerPause(cid){
   const t=timerGet(cid);if(!t||!t.running)return;
   t.elapsed+=Date.now()-t.start;
   t.running=false;
+  saveTimers();
   clearInterval(_timerIntervals[cid]);delete _timerIntervals[cid];
   showToast('Timer paused');
   render();
@@ -2358,6 +2368,7 @@ function timerStop(cid){
     if(idx>=0){arr.splice(idx,1);setE(cid,yr,mo,arr);saveEntries();}
   }
   delete S.timers[cid];
+  saveTimers();
   S.mh=bill;
   S._timerComment=comment;
   S.modal={type:'entry',cid,fromTimer:true};
@@ -2367,6 +2378,7 @@ function timerStop(cid){
 function timerDiscard(cid){
   if(!S.timers)return;
   delete S.timers[cid];
+  saveTimers();
   clearInterval(_timerIntervals[cid]);delete _timerIntervals[cid];
   showToast('Timer discarded');
   render();
@@ -2389,6 +2401,7 @@ function timerAutoLog(cid,bill){
       saveEntries();
       showToast('⏱ Updated to '+bill+'h'+(comment?' · '+comment:''));
       t.lastAutoBill=bill;
+      saveTimers();
       render();
       if(t&&t.running)_startTimerTick(cid);
       return;
@@ -2401,6 +2414,7 @@ function timerAutoLog(cid,bill){
   showToast('⏱ Auto-logged '+bill+'h'+(comment?' · '+comment:''));
   t.autoLogId=entryId;
   t.lastAutoBill=bill;
+  saveTimers();
   render();
   if(t&&t.running)_startTimerTick(cid);
 }
@@ -2414,6 +2428,8 @@ function _startTimerTick(cid){
     if(ms>=8*60*60*1000&&!t._warnedForgotten){
       t._warnedForgotten=true;
       t.running=false;
+      t.elapsed+=Date.now()-t.start;
+      saveTimers();
       clearInterval(_timerIntervals[cid]);
       S._forgottenTimer={cid};
       render();
@@ -2426,8 +2442,9 @@ function _startTimerTick(cid){
     }
     const disp=document.getElementById('td-'+cid);
     const bl=document.getElementById('tbl-'+cid);
-    if(!disp){clearInterval(_timerIntervals[cid]);return;}
-    disp.textContent=timerFmt(ms);
+    // If the timer bar isn't on screen (user navigated away), keep ticking
+    // so auto-logging still fires — just skip the display update.
+    if(disp)disp.textContent=timerFmt(ms);
     if(bl)bl.innerHTML=billLabel(ms,t.lastAutoBill);
   },1000);
 }
@@ -2469,6 +2486,7 @@ function forgottenKeepGoing(cid){
   t._warnedForgotten=false; 
   t.running=true;
   t.start=Date.now();
+  saveTimers();
   _startTimerTick(cid);
   render();
 }
