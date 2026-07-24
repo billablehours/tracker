@@ -3666,6 +3666,37 @@ function xfRenderCal(which){
 load();
 S.year=new Date().getFullYear();
 S.month=new Date().getMonth();
+function _resyncAllTimers(){
+  // Browsers throttle or fully freeze setInterval in background tabs, so a
+  // running timer's tick may not fire at all while the tab is hidden. This
+  // recomputes real elapsed time and catches auto-log up the moment the tab
+  // becomes visible again, instead of waiting on a possibly-stalled interval.
+  if(!S.timers)return;
+  Object.keys(S.timers).forEach(cid=>{
+    const t=S.timers[cid];
+    if(!t||!t.running)return;
+    const ms=timerElapsed(cid);
+    if(ms>=8*60*60*1000&&!t._warnedForgotten){
+      t._warnedForgotten=true;
+      t.running=false;
+      t.elapsed+=Date.now()-t.start;
+      saveTimers();
+      clearInterval(_timerIntervals[cid]);delete _timerIntervals[cid];
+      S._forgottenTimer={cid};
+      render();
+      return;
+    }
+    const bill=timerBillable(ms);
+    if(bill>0&&bill!==(t.lastAutoBill||0)){
+      timerAutoLog(cid,bill);
+    } else if(t.running&&!_timerIntervals[cid]){
+      _startTimerTick(cid);
+    }
+  });
+}
+document.addEventListener('visibilitychange',function(){
+  if(!document.hidden)_resyncAllTimers();
+});
 document.addEventListener('click',function(e){
   if(S._searchOpen&&!e.target.closest('.nav-search')){
     S._searchQ='';
