@@ -352,6 +352,15 @@ svg.ic{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;str
 .ct-pill button{background:none;border:none;color:var(--text-hint);cursor:pointer;padding:0;display:flex;font-size:11px}
 .ct-empty{text-align:center;padding:2rem;color:var(--text-secondary);font-size:13px;border:1px dashed var(--border);border-radius:var(--radius)}
 .ct-textarea{width:100%;min-height:200px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;line-height:1.7}
+.fab-log{position:fixed;bottom:26px;right:26px;z-index:90;display:flex;align-items:center;gap:8px;background:var(--blue);color:#fff;border:none;border-radius:999px;padding:14px 22px;font-size:14.5px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;box-shadow:0 6px 20px rgba(24,96,168,0.38);transition:transform .12s,box-shadow .12s}
+.fab-log:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(24,96,168,0.5)}
+.fab-log:active{transform:translateY(0)}
+.pto-allset{display:inline-flex;align-items:center;gap:5px;background:none;border:1.5px solid var(--border2);border-radius:99px;padding:4px 12px;font-size:12px;font-weight:600;color:var(--text-secondary);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.pto-allset:hover{border-color:var(--green);color:var(--green)}
+.pto-allset.done{background:var(--green);border-color:var(--green);color:#fff}
+.pto-allset-sm{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border2);background:none;color:var(--blue);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;margin-right:7px;flex-shrink:0;transition:all .15s}
+.pto-allset-sm:hover{border-color:var(--green);color:var(--green)}
+.pto-allset-sm.done{background:var(--green);border-color:var(--green);color:#fff}
 </style>
 </head>
 <body>
@@ -817,7 +826,8 @@ function renderTopNav(){
       <button onclick="nextMonth()">&#8250;</button>
     </div>
   </div>
-</nav>`;
+</nav>
+<button class="fab-log" onclick="openQuickAdd()" title="Fast time logging"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Log time</button>`;
 }
 
 function renderDashboard(app){
@@ -1617,7 +1627,7 @@ function renderModal(app){
     </div>`;
   } else if(m.type==='entry'){
     const c=findC(m.cid),r=rate(c);
-    const entry=m.eid?getE(m.cid,S.year,S.month).find(e=>e.id===m.eid):{hours:0.5,date:today(),desc:''};
+    const entry=m.eid?getE(m.cid,S.year,S.month).find(e=>e.id===m.eid):{hours:0.5,date:(m._qdate||today()),desc:(m._qdesc||'')};
     const h=S.mh;
     const {monday:wkMon}=getFullWeekRange();
     const DAY_ABBR=['Mon','Tue','Wed','Thu','Fri'];
@@ -1629,8 +1639,11 @@ function renderModal(app){
       dayBtns+=`<button type="button" class="quick-btn day-btn${isSelected?' active':''}" data-date="${ds}" onclick="setEntryDate('${ds}')" style="flex:1;font-size:11px;padding:4px 0;min-width:0">${DAY_ABBR[d]}</button>`;
     }
     inner=`<div class="modal">
-      <div class="modal-header"><h2>${m.eid?'Edit time entry':'Add time entry'}</h2><button class="btn-ghost" onclick="closeModal()">${ic.x}</button></div>
-      <div class="field"><label>Customer</label><div class="cpill"><div class="c-dot" style="background:${colorForCustomer(c.id)}"></div>${esc(c.name)} &middot; ${fmtMoney(r)}/hr</div></div>
+      <div class="modal-header"><h2>${m.quick?'Log time':(m.eid?'Edit time entry':'Add time entry')}</h2><button class="btn-ghost" onclick="closeModal()">${ic.x}</button></div>
+      <div class="field"><label>Customer</label>${m.quick
+        ?`<select id="m-qcust" onchange="quickSetCustomer(this.value)">${S.active.map(cu=>`<option value="${cu.id}" ${cu.id===m.cid?'selected':''}>${esc(cu.name)}</option>`).join('')}</select>
+        <button type="button" class="btn-secondary" style="margin-top:8px;width:100%" onclick="quickStartTimer('${m.cid}')">${timerGet(m.cid)&&timerGet(m.cid).running?'&#9201; Timer running &middot; view':'&#9654; Start live timer'}</button>`
+        :`<div class="cpill"><div class="c-dot" style="background:${colorForCustomer(c.id)}"></div>${esc(c.name)} &middot; ${fmtMoney(r)}/hr</div>`}</div>
       <div class="field"><label>Date</label>
         <div class="day-btn-row" style="display:flex;gap:4px;margin-bottom:8px">${dayBtns}</div>
         <input id="m-date" type="date" value="${entry.date||today()}" onchange="syncDayBtns(this.value)">
@@ -2135,6 +2148,40 @@ function fallbackCopy(text,msg){
 function openAddCustomer(){_pendingLogo=undefined;S.modal={type:'customer'};render();}
 function openEditCustomer(id){_pendingLogo=undefined;S.modal={type:'customer',id};render();}
 function openAddEntry(cid){S.mh=0.5;S.modal={type:'entry',cid};render();}
+function openQuickAdd(){
+  if(!S.active.length){showToast('Add a customer first');return;}
+  S.mh=0.5;
+  S.modal={type:'entry',cid:S.active[0].id,quick:true};
+  render();
+}
+function quickSetCustomer(cid){
+  if(!S.modal||S.modal.type!=='entry')return;
+  const dateEl=document.getElementById('m-date'),descEl=document.getElementById('m-desc');
+  S.modal._qdate=dateEl?dateEl.value:'';
+  S.modal._qdesc=descEl?descEl.value:'';
+  S.modal.cid=cid;
+  render();
+}
+function quickStartTimer(cid){
+  const c=findC(cid);
+  if(!c){showToast('Customer not found');return;}
+  const t=timerGet(cid);
+  if(t&&t.running){
+    // timer already live for this customer - jump to it
+    S.modal=null;
+    openDetail(cid);
+    return;
+  }
+  const descEl=document.getElementById('m-desc');
+  const comment=descEl?descEl.value.trim():'';
+  if(!S.timers)S.timers={};
+  S.timers[cid]={start:Date.now(),elapsed:0,running:true,comment};
+  saveTimers();
+  _startTimerTick(cid);
+  S.modal=null;
+  showToast('\u23F1 Timer started for '+c.name);
+  render();
+}
 function openEditEntry(cid,eid){
   const e=getE(cid,S.year,S.month).find(x=>x.id===eid);
   S.mh=e?e.hours:0.5;S.modal={type:'entry',cid,eid};render();
@@ -2196,7 +2243,7 @@ function saveEntry(cid,eid,keepOpen){
     setE(cid,entryYear,entryMonth,targetArr);
   }
   saveEntries();
-  if(keepOpen){S.mh=0.5;S.modal={type:'entry',cid};render();return;}
+  if(keepOpen){S.mh=0.5;S.modal={type:'entry',cid,quick:S.modal&&S.modal.quick};render();return;}
   S.modal=null;
 
   const differentMonth=(entryYear!==S.year||entryMonth!==S.month);
@@ -2514,7 +2561,7 @@ function forgottenDiscard(cid){
 }
 
 function exportData(){
-  const data={active:S.active,archived:S.archived,entries:S.entries,cfg:S.cfg,configProjects:S.configProjects,exportedAt:new Date().toISOString(),version:4};
+  const data={active:S.active,archived:S.archived,entries:S.entries,cfg:S.cfg,configProjects:S.configProjects,pto:S.pto,exportedAt:new Date().toISOString(),version:5};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;a.download=`work-companion-backup-${today()}.json`;a.click();
@@ -2566,7 +2613,13 @@ function importData(){
       S.entries=data.entries||{};
       S.cfg={...S.cfg,...(data.cfg||data.settings||{})};
       S.configProjects=data.configProjects||{};
-      saveActive();saveArchived();saveEntries();saveCfg();saveConfigProjects();
+      if(data.pto&&data.pto.instances&&data.pto.instances.length){
+        S.pto=S.pto||{};
+        S.pto.instances=data.pto.instances;
+        S.pto.activeInstance=Number.isInteger(data.pto.activeInstance)?data.pto.activeInstance:0;
+        S.pto._mgrEmailOpen=data.pto._mgrEmailOpen||false;
+      }
+      saveActive();saveArchived();saveEntries();saveCfg();saveConfigProjects();savePTO();
       render();alert('Data imported successfully.');
     }catch(err){alert('Could not read this file. Make sure it is a valid export.');}
   };
@@ -2756,6 +2809,15 @@ function ptoPct(){
 
 function ptoToggleGlobal(key){const inst=ptoInst();inst.checks[key]=!inst.checks[key];savePTO();render();}
 function ptoToggleCust(cid,key){const cd=ptoGetCust(cid);cd.checks[key]=!cd.checks[key];savePTO();render();}
+function ptoSetAllCust(cid){
+  const cd=ptoGetCust(cid);
+  const keys=['accessConfirmed','backupNotified','handoverCompleted','customerNotified','eamUpdated','calendarUpdated'];
+  const allDone=keys.every(k=>cd.checks[k]);
+  keys.forEach(k=>{cd.checks[k]=!allDone;});
+  savePTO();
+  showToast(allDone?'Checklist cleared':'All set \u2014 '+keys.length+'/'+keys.length+' complete');
+  render();
+}
 function ptoSetDate(which,val){const inst=ptoInst();inst[which==='from'?'dateFrom':'dateUntil']=val;inst.calOpen='';savePTO();render();}
 function ptoOpenCal(which){
   const inst=ptoInst();
@@ -2922,7 +2984,10 @@ function renderPTOCustomerGrid(vc){
       <div class="c-name-row">${logoEl}<span class="c-name">${esc(c.name)}</span></div>
       <div class="c-row"><span class="c-lbl">Back ups</span><span class="c-val" style="font-size:12px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${bups.length?bups.join(', '):'—'}</span></div>
       <div class="c-row"><span class="c-lbl">Contacts</span><span class="c-val">${(cd.contacts||[]).filter(x=>x&&x.trim()).length||'—'}</span></div>
-      <div class="c-row"><span class="c-lbl">Checklist</span><span class="c-val" style="color:${pct===100?'var(--green)':pct>0?'var(--amber)':'var(--text-hint)'}">${done}/${total}</span></div>
+      <div class="c-row"><span class="c-lbl">Checklist</span><span class="c-val" style="display:inline-flex;align-items:center;color:${pct===100?'var(--green)':pct>0?'var(--amber)':'var(--text-hint)'}">
+        <button class="pto-allset-sm ${done===total&&total>0?'done':''}" onclick="event.stopPropagation();ptoSetAllCust('${c.id}')" title="${done===total?'Clear checklist':'All set — mark all '+total+' complete'}"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></button>
+        ${done}/${total}
+      </span></div>
       <div class="pto-cust-prog">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
           <span style="font-size:11px;color:var(--text-secondary)">PTO Readiness</span>
@@ -3002,7 +3067,11 @@ function renderPTOCustomerDetail(c){
       </div>
     </div>
     <div class="section-card" style="margin-bottom:1rem">
-      <div class="section-header" style="margin-bottom:0.75rem"><h2 style="font-size:15px">Checklist</h2></div>
+      <div class="section-header" style="margin-bottom:0.75rem"><h2 style="font-size:15px">Checklist</h2>
+        <button class="pto-allset ${custChecks.every(ch=>cd.checks[ch.key])?'done':''}" onclick="ptoSetAllCust('${c.id}')" title="Mark all ${custChecks.length} items complete">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> All set
+        </button>
+      </div>
       <ul class="pto-checklist-small">
         ${custChecks.map(ch=>`<li>
           <div class="pto-check-box-sm ${(cd.checks[ch.key]||false)?'checked':''}" onclick="ptoToggleCust('${c.id}','${ch.key}')"></div>
