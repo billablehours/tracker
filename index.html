@@ -1293,7 +1293,7 @@ function renderIncomeChart(){
   const dots=points.map(p=>{
     const safeLabel=esc(p.m.label);
     const safeWork=esc(p.m.workLabel);
-    const value=esc(fmtMoney(p.m.total));
+    const value=S.officeMode?'•••':esc(fmtMoney(p.m.total));
     return `<circle cx="${p.x}" cy="${p.y}" r="4.5" fill="var(--green)" stroke="var(--surface)" stroke-width="2" style="cursor:pointer"
         onmousemove="chartTooltip(event,'Paid in ${safeLabel}','${value}')"
         onmouseleave="hideChartTooltip()"></circle>
@@ -1598,7 +1598,7 @@ ${renderTopNav()}
         ${renderAnalyticsChart()}
         <div class="divider"></div>
         <p class="sec-label">Income received per month</p>
-        ${renderIncomeChart()}
+        <div class="${S.officeMode?'office-blur':''}">${renderIncomeChart()}</div>
       </div>
     </div>
   </div>
