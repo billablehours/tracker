@@ -869,6 +869,7 @@ const FS_STATE={
   supported:!!(window.showSaveFilePicker&&window.showOpenFilePicker),
   connected:false,
   needsReconnect:false,
+  bannerDismissed:false,
   filename:'',
   handle:null,
   lastSyncedAt:null,
@@ -933,7 +934,7 @@ async function fsWriteSnapshot(){
   if(!FS_STATE.handle)return;
   try{
     const perm=await FS_STATE.handle.queryPermission({mode:'readwrite'});
-    if(perm!=='granted'){FS_STATE.connected=false;FS_STATE.needsReconnect=true;render();return;}
+    if(perm!=='granted'){FS_STATE.connected=false;FS_STATE.needsReconnect=true;FS_STATE.bannerDismissed=false;render();return;}
     const snap={__wcFileSync:true,savedAt:new Date().toISOString(),localStorage:fsSnapshotLocalStorage()};
     const writable=await FS_STATE.handle.createWritable();
     await writable.write(JSON.stringify(snap,null,2));
@@ -966,9 +967,11 @@ async function fsInit(){
       FS_STATE.connected=true;
     }else{
       FS_STATE.needsReconnect=true;
+      FS_STATE.bannerDismissed=false;
     }
   }catch(e){
     FS_STATE.needsReconnect=true;
+    FS_STATE.bannerDismissed=false;
   }
 }
 async function fsConnectNew(){
@@ -1379,8 +1382,24 @@ function renderAnalyticsChart(){
   `;
 }
 
+function renderReconnectBanner(){
+  const existing=document.getElementById('reconnect-banner');
+  if(!FS_STATE.needsReconnect||FS_STATE.bannerDismissed){ if(existing)existing.remove(); return; }
+  if(existing)return;
+  const div=document.createElement('div');
+  div.id='reconnect-banner';
+  div.style.cssText='position:sticky;top:0;z-index:60;background:#f59e0b;color:#1a1a1a;display:flex;align-items:center;justify-content:center;gap:12px;padding:8px 16px;font-size:13px;font-weight:600;flex-wrap:wrap;text-align:center';
+  div.innerHTML=`
+    <span>&#9888;&#65039; Data file disconnected &mdash; changes are only saved to this browser for now.</span>
+    <button onclick="fsReconnect()" style="background:#1a1a1a;color:#fff;border:none;border-radius:6px;padding:5px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">Reconnect${FS_STATE.filename?' to '+esc(FS_STATE.filename):''}</button>
+    <button onclick="FS_STATE.bannerDismissed=true;this.parentElement.remove()" title="Dismiss for now" style="background:none;border:none;color:#1a1a1a;font-size:16px;cursor:pointer;line-height:1;padding:0 4px">&times;</button>
+  `;
+  document.body.insertBefore(div,document.body.firstChild);
+}
+
 function render(){
   applyTheme();
+  renderReconnectBanner();
   // Safety net: any running timer must have a live tick interval
   // (restores the ticking display after navigation and guarantees auto-log keeps working)
   if(S.timers)Object.keys(S.timers).forEach(cid=>{
