@@ -1349,16 +1349,19 @@ function renderAnalyticsChart(){
 function renderReconnectBanner(){
   const existing=document.getElementById('reconnect-banner');
   if(!FS_STATE.needsReconnect||FS_STATE.bannerDismissed){ if(existing)existing.remove(); return; }
-  if(existing)return;
-  const div=document.createElement('div');
+  const div=existing||document.createElement('div');
   div.id='reconnect-banner';
-  div.style.cssText='position:sticky;top:0;z-index:60;background:#f59e0b;color:#1a1a1a;display:flex;align-items:center;justify-content:center;gap:12px;padding:8px 16px;font-size:13px;font-weight:600;flex-wrap:wrap;text-align:center';
+  div.style.cssText='position:sticky;top:0;z-index:60;background:#f59e0b;color:#1a1a1a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px 16px;font-size:13px;font-weight:600;text-align:center';
   div.innerHTML=`
-    <span>&#9888;&#65039; Data file disconnected &mdash; changes are only saved to this browser for now.</span>
-    <button onclick="fsReconnect()" style="background:#1a1a1a;color:#fff;border:none;border-radius:6px;padding:5px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">Reconnect${FS_STATE.filename?' to '+esc(FS_STATE.filename):''}</button>
-    <button onclick="FS_STATE.bannerDismissed=true;this.parentElement.remove()" title="Dismiss for now" style="background:none;border:none;color:#1a1a1a;font-size:16px;cursor:pointer;line-height:1;padding:0 4px">&times;</button>
+    <div style="display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap">
+      <span>&#9888;&#65039; Data file disconnected &mdash; changes are only saved to this browser for now.</span>
+      <button onclick="fsReconnect()" style="background:#1a1a1a;color:#fff;border:none;border-radius:6px;padding:5px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">Reconnect${FS_STATE.filename?' to '+esc(FS_STATE.filename):''}</button>
+      <button onclick="fsConnectNew()" style="background:none;color:#1a1a1a;border:1px solid #1a1a1a;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">Set up new sync file</button>
+      <button onclick="FS_STATE.bannerDismissed=true;document.getElementById('reconnect-banner').remove()" title="Dismiss for now" style="background:none;border:none;color:#1a1a1a;font-size:16px;cursor:pointer;line-height:1;padding:0 4px">&times;</button>
+    </div>
+    ${FS_STATE.error?`<div style="font-size:12px;font-weight:500;opacity:.85">${esc(FS_STATE.error)} &mdash; try "Set up new sync file" instead.</div>`:''}
   `;
-  document.body.insertBefore(div,document.body.firstChild);
+  if(!existing)document.body.insertBefore(div,document.body.firstChild);
 }
 
 function render(){
@@ -1745,7 +1748,7 @@ function renderCCard(c){
       ${(S.timers&&S.timers[c.id]&&S.timers[c.id].running)?'<span class="timer-dot" title="Timer running"></span>':''}
     </div>
     <div class="c-row"><span class="c-lbl">Hours this month:</span><span class="c-val">${h.toFixed(1)}</span></div>
-    <div class="c-row"><span class="c-lbl">Revenue:</span><span class="c-val-green">${fmtMoney(rev)}</span></div>
+    <div class="c-row"><span class="c-lbl">Revenue:</span><span class="c-val-green${S.officeMode?' office-blur':''}">${fmtMoney(rev)}</span></div>
     <div class="c-row"><span class="c-lbl">This week:</span><span class="c-val">${weekHoursForCustomer(c.id).toFixed(1)}h</span></div>
     ${arch?'':`<div class="c-row"><span class="c-lbl">Status Report:</span><span style="font-size:13px;font-weight:500;color:${sr.submitted?'var(--green)':'var(--text-hint)'}">${sr.submitted?'Submitted':'Not Submitted'}</span></div>`}
     ${bar}
@@ -1805,11 +1808,11 @@ function renderDetail(app){
         return `<div class="entry-group">
           <div class="entry-date-hdr">
             <span class="entry-date-lbl">${ic.calendar} ${fmtDate(d)}</span>
-            <span class="entry-date-sum"><span>${dh.toFixed(1)} hours</span><span style="color:var(--green)">${fmtMoney(dh*r)}</span></span>
+            <span class="entry-date-sum"><span>${dh.toFixed(1)} hours</span><span style="color:var(--green)" class="${S.officeMode?'office-blur':''}">${fmtMoney(dh*r)}</span></span>
           </div>
           ${[...de].reverse().map(e=>`<div class="entry-item${S._hlEntry===e.id?' hl':''}" id="entry-${e.id}">
             <div>
-              <span class="entry-hrs">${e.hours}h</span><span class="entry-rev">${fmtMoney(e.hours*r)}</span>
+              <span class="entry-hrs">${e.hours}h</span><span class="entry-rev${S.officeMode?' office-blur':''}">${fmtMoney(e.hours*r)}</span>
               ${e.desc?`<div class="entry-desc">${esc(e.desc)}</div>`:''}
             </div>
             <div class="entry-actions">
@@ -1853,7 +1856,7 @@ ${renderTopNav()}
   ${tBar}
   <div class="stats-grid" style="margin-bottom:1.5rem">
     <div class="stat-card" onclick="S.modal={type:'custweek',cid:'${c.id}',wkOff:0};render()" style="cursor:pointer" title="Click to see daily breakdown"><div><div class="s-label">Hours this month</div><div class="s-value">${h.toFixed(1)}</div><div class="s-label" style="margin-top:10px">This week</div><div class="s-value">${weekHoursForCustomer(c.id).toFixed(1)}h</div></div><div class="stat-icon" style="background:#e3edf6;color:#1860a8">${ic.clock}</div></div>
-    ${arch?`<div class="stat-card"><div><div class="s-label">Hourly rate</div><div class="s-value" style="font-size:15px">${fmtMoney(r)}/hr</div></div><div class="stat-icon" style="background:#e3edf6;color:#1860a8">${ic.dollar}</div></div>`
+    ${arch?`<div class="stat-card"><div><div class="s-label">Hourly rate</div><div class="s-value${S.officeMode?' office-blur':''}" style="font-size:15px">${fmtMoney(r)}/hr</div></div><div class="stat-icon" style="background:#e3edf6;color:#1860a8">${ic.dollar}</div></div>`
     :(()=>{const _sr=getSR(c.id,S.year,S.month);return `<div class="stat-card" onclick="openStatusReport('${c.id}')" style="cursor:pointer" title="Open Status Report"><div><div class="s-label">Status Report</div><div class="s-value" style="font-size:13px;margin-top:4px;color:${_sr.submitted?'var(--green)':'var(--text-hint)'}">${_sr.submitted?'✓ Submitted':'Not Submitted'}</div></div><div class="stat-icon" style="background:${_sr.submitted?'#f0fdf4':'var(--bg)'};color:${_sr.submitted?'var(--green)':'var(--text-secondary)'}"><svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div></div>`;})()} 
   </div>
   ${renderTimerBar(c.id,arch)}
@@ -1982,7 +1985,7 @@ function renderModal(app){
       <div class="field"><label>Customer</label>${m.quick
         ?`<select id="m-qcust" onchange="quickSetCustomer(this.value)">${S.active.map(cu=>`<option value="${cu.id}" ${cu.id===m.cid?'selected':''}>${esc(cu.name)}</option>`).join('')}</select>
         <button type="button" class="btn-secondary" style="margin-top:8px;width:100%" onclick="quickStartTimer('${m.cid}')">${timerGet(m.cid)&&timerGet(m.cid).running?'&#9201; Timer running &middot; view':'&#9654; Start live timer'}</button>`
-        :`<div class="cpill"><div class="c-dot" style="background:${colorForCustomer(c.id)}"></div>${esc(c.name)} &middot; ${fmtMoney(r)}/hr</div>`}</div>
+        :`<div class="cpill"><div class="c-dot" style="background:${colorForCustomer(c.id)}"></div>${esc(c.name)} &middot; <span class="${S.officeMode?'office-blur':''}">${fmtMoney(r)}/hr</span></div>`}</div>
       <div class="field"><label>Date</label>
         <div class="day-btn-row" style="display:flex;gap:4px;margin-bottom:8px">${dayBtns}</div>
         <input id="m-date" type="date" value="${entry.date||today()}" onchange="syncDayBtns(this.value)">
@@ -1990,7 +1993,7 @@ function renderModal(app){
       <div class="field"><label>Hours</label>
         <div class="stepper">
           <button class="step-btn" onclick="adjH(-0.5)">&#8722;</button>
-          <div><div class="h-big" id="hbig">${h}</div><div class="h-sub" id="hrev">${fmtMoney(h*r)}</div></div>
+          <div><div class="h-big" id="hbig">${h}</div><div class="h-sub${S.officeMode?' office-blur':''}" id="hrev">${fmtMoney(h*r)}</div></div>
           <button class="step-btn" onclick="adjH(0.5)">+</button>
         </div>
         <div class="quick-grid">${QUICK.map(q=>`<button class="quick-btn${h===q?' active':''}" onclick="setH(${q})">${q}h</button>`).join('')}</div>
