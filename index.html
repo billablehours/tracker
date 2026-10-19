@@ -101,9 +101,6 @@ textarea{resize:vertical;height:80px}
 [data-theme="dark"] .entry-item.hl{animation:hlPulseDark 2.8s ease-out}
 @keyframes hlPulseDark{0%{background:#4a3c14;box-shadow:inset 0 0 0 2px #b8860b}65%{background:#4a3c14}100%{background:transparent;box-shadow:none}}
 /* Analytics filtered results */
-.an-gran{display:inline-flex;background:var(--bg);border:1px solid var(--border);border-radius:99px;padding:3px;gap:2px}
-.an-gran button{background:none;border:none;padding:5px 14px;border-radius:99px;font-size:12.5px;font-weight:500;color:var(--text-secondary);cursor:pointer;font-family:inherit}
-.an-gran button.active{background:var(--surface);color:var(--blue);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:1.5rem}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between}
 .stat-card[onclick]:hover,.stat-card[style*="cursor:pointer"]:hover{border-color:var(--blue)}
@@ -3690,7 +3687,7 @@ function xfClearCusts(){if(S._xf){S._xf.cids=[];S._xf.drop=false;}render();}
 /* ===== Analytics: filtered results with daily/weekly/monthly view ===== */
 function applyAnalyticsFilter(){
   if(!S._xf)S._xf={cids:[],from:'',to:'',drop:false,calOpen:'',calYear:new Date().getFullYear(),calMonth:new Date().getMonth()};
-  if(!S._an)S._an={applied:null,gran:'monthly'};
+  if(!S._an)S._an={applied:null};
   S._an.applied={cids:[...(S._xf.cids||[])],from:S._xf.from||'',to:S._xf.to||''};
   S._xf.drop=false;S._xf.calOpen='';
   if(S.accOpen)S.accOpen.an=true;
@@ -3698,11 +3695,6 @@ function applyAnalyticsFilter(){
 }
 function clearAnalyticsFilter(){
   if(S._an)S._an.applied=null;
-  render();
-}
-function setAnGran(g){
-  if(!S._an)S._an={applied:null,gran:'monthly'};
-  S._an.gran=g;
   render();
 }
 function filteredEntryRows(f){
@@ -3744,48 +3736,22 @@ function anPeriodLabel(key,gran){
   const lbl=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
   return gran==='weekly'?'Wk '+lbl:lbl;
 }
-function anCurrentWindow(gran){
-  const now=new Date();
-  const y=now.getFullYear(),m=now.getMonth(),d=now.getDate();
-  const ds=y+'-'+p2(m+1)+'-'+p2(d);
-  if(gran==='daily'){
-    return {from:ds,to:ds,label:'Today · '+xfFmtDate(ds)};
-  }
-  if(gran==='weekly'){
-    const day=now.getDay();
-    const diff=day===0?-6:1-day;
-    const mon=new Date(y,m,d+diff);
-    const sun=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+6);
-    const f=mon.getFullYear()+'-'+p2(mon.getMonth()+1)+'-'+p2(mon.getDate());
-    const t=sun.getFullYear()+'-'+p2(sun.getMonth()+1)+'-'+p2(sun.getDate());
-    return {from:f,to:t,label:'This week · '+xfFmtDate(f)+' – '+xfFmtDate(t)};
-  }
-  const last=new Date(y,m+1,0).getDate();
-  return {from:y+'-'+p2(m+1)+'-01',to:y+'-'+p2(m+1)+'-'+p2(last),label:'This month · '+MONTHS[m]+' '+y};
-}
 function renderFilteredAnalytics(){
-  if(!S._an)S._an={applied:null,gran:'monthly'};
+  if(!S._an)S._an={applied:null};
   if(!S._an.applied)return '';
   const applied=true;
   const f=S._an.applied;
-  const gran=S._an.gran||'monthly';
-  const win=anCurrentWindow(gran);
-  // intersect the current day/week/month window with the applied date filter
-  const effFrom=f.from&&f.from>win.from?f.from:win.from;
-  const effTo=f.to&&f.to<win.to?f.to:win.to;
-  const rows=effFrom>effTo?[]:filteredEntryRows({cids:f.cids,from:effFrom,to:effTo});
+  const rows=filteredEntryRows({cids:f.cids,from:f.from,to:f.to});
   const custLabel=f.cids.length===0?'All customers':f.cids.length+' customer'+(f.cids.length>1?'s':'');
   const dateFilterNote=(f.from||f.to)?' · filter: '+(f.from?xfFmtDate(f.from):'…')+' – '+(f.to?xfFmtDate(f.to):'…'):'';
   const clearBtn='<button class="btn-ghost" style="font-size:12px" onclick="clearAnalyticsFilter()">&#x2715; Clear filters</button>';
-  const granBtns='<div class="an-gran">'+['daily','weekly','monthly'].map(g=>
-    '<button class="'+(gran===g?'active':'')+'" onclick="setAnGran(\''+g+'\')">'+g.charAt(0).toUpperCase()+g.slice(1)+'</button>').join('')+'</div>';
   const header='<div class="divider"></div>'
     +'<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:1rem;flex-wrap:nowrap">'
-    +'<div style="flex:1;min-width:0"><p class="sec-label" style="margin:0 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Billable hours per customer — '+esc(win.label)+'</p>'
+    +'<div style="flex:1;min-width:0"><p class="sec-label" style="margin:0 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Billable hours per customer</p>'
     +'<span style="font-size:12px;color:var(--text-hint);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+custLabel+esc(dateFilterNote)+'</span></div>'
-    +'<div style="display:flex;align-items:center;gap:10px;flex-shrink:0">'+granBtns+clearBtn+'</div></div>';
+    +'<div style="display:flex;align-items:center;gap:10px;flex-shrink:0">'+clearBtn+'</div></div>';
   if(rows.length===0){
-    return header+'<div class="empty-state" style="padding:2rem 0">No entries for this period'+((f.from||f.to)?' within the selected date filter':'')+'.</div>';
+    return header+'<div class="empty-state" style="padding:2rem 0">No entries match the selected filters'+'.</div>';
   }
   const custMap={};
   rows.forEach(r=>{
@@ -3793,8 +3759,9 @@ function renderFilteredAnalytics(){
     custMap[r.cid].hours+=r.hours;custMap[r.cid].rev+=r.rev;
   });
   const custs=Object.values(custMap).sort((a,b)=>b.hours-a.hours);
-  // break the window into days: today = 1 bar, week = its days, month = its days
-  const subGran='daily';
+  // bar size adapts automatically to the length of the range (not a user filter)
+  const spanDays=Math.round((new Date(rows[rows.length-1].date+'T00:00:00')-new Date(rows[0].date+'T00:00:00'))/86400000)+1;
+  const subGran=spanDays<=45?'daily':spanDays<=180?'weekly':'monthly';
   const periodMap={};
   rows.forEach(r=>{
     const key=anPeriodKey(r.date,subGran);
