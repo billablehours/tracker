@@ -3869,14 +3869,15 @@ function exportXls(){
   const safeNum=v=>{const n=parseFloat(v);return isNaN(n)?0:n;};
   const dataStartRow=2;
   const dataEndRow=dataStartRow+dataRows.length-1;
+  const dayName=ds=>{const d=new Date(ds+'T00:00:00');return isNaN(d.getTime())?'':d.toLocaleDateString('en-US',{weekday:'long'});};
   const aoa=[
-    ['Date','Customer','Hours','Description'],
-    ...dataRows.map(r=>[safeStr(r[0]),safeStr(r[1]),safeNum(r[2]),safeStr(r[3])]),
+    ['Date','Day','Customer','Hours','Description'],
+    ...dataRows.map(r=>[safeStr(r[0]),dayName(r[0]),safeStr(r[1]),safeNum(r[2]),safeStr(r[3])]),
     [],
-    ['TOTAL','',{f:'SUM(C'+dataStartRow+':C'+dataEndRow+')'},'']
+    ['TOTAL','','',{f:'SUM(D'+dataStartRow+':D'+dataEndRow+')'},'']
   ];
   const ws=XLSX.utils.aoa_to_sheet(aoa);
-  ws['!cols']=[{wch:14},{wch:24},{wch:8},{wch:44}];
+  ws['!cols']=[{wch:14},{wch:12},{wch:24},{wch:8},{wch:44}];
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'BillableHours');
   const from=xf.from?xf.from.slice(0,7):'';
